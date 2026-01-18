@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Brains2Heart – Cardiac & Neural View</title>
+  <title>Brain & Heart – Holistic Health Simulation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -29,14 +29,14 @@
       z-index: 10;
     }
 
-    h2 { margin: 0; color: #2c3e50; font-size: 1.4rem; }
-    .desc { font-size: 0.8rem; color: #5a6772; margin-bottom: 15px; }
+    h2 { margin: 0; color: #2c3e50; font-size: 1.6rem; letter-spacing: -0.5px; }
+    .desc { font-size: 0.8rem; color: #5a6772; margin-bottom: 20px; }
 
     .bio-age-box {
       text-align: center;
       padding: 12px;
       margin-bottom: 20px;
-      background: #c0392b; /* Alert red for Bio Age */
+      background: #2c3e50;
       color: white;
       border-radius: 8px;
     }
@@ -60,15 +60,16 @@
       padding: 15px;
       background: rgba(255, 255, 255, 0.6);
       border-radius: 10px;
-      border-left: 5px solid #c0392b;
-      font-size: 0.85rem;
-      min-height: 120px;
+      border-left: 5px solid #2980b9;
+      font-size: 0.82rem;
+      min-height: 140px;
+      overflow-y: auto;
     }
 
     #viewer-container {
       flex-grow: 1;
       display: flex;
-      flex-direction: row; /* Heart Left, Brain Right */
+      flex-direction: row;
       gap: 15px;
       padding: 15px;
     }
@@ -80,7 +81,6 @@
       border: 1px solid rgba(255, 255, 255, 0.6);
       position: relative;
       overflow: hidden;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.03);
     }
 
     .label-tag {
@@ -91,14 +91,14 @@
       color: white;
       padding: 6px 14px;
       border-radius: 20px;
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       font-weight: bold;
       pointer-events: none;
       text-transform: uppercase;
-      letter-spacing: 1px;
     }
 
-    .warning { color: #d63031; font-weight: bold; }
+    .warning { color: #d63031; font-weight: bold; display: block; margin-bottom: 4px; }
+    .positive { color: #27ae60; font-weight: bold; display: block; margin-bottom: 4px; }
   </style>
 
   <script type="importmap">
@@ -113,16 +113,16 @@
 <body>
 
   <div id="sidebar">
-    <h2>Brains2Heart</h2>
-    <div class="desc">Health-to-Age Correlation</div>
+    <h2>Brain & Heart</h2>
+    <div class="desc">Biological Health Simulator</div>
 
     <div class="bio-age-box">
-      <small>BODY WEAR-AND-TEAR (BIO AGE)</small>
+      <small>ESTIMATED BIOLOGICAL AGE</small>
       <big id="bioAgeDisp">25</big>
     </div>
 
     <div class="control">
-      <label>Chronological Age <span class="value-display"><span id="ageVal">25</span> yrs</span></label>
+      <label>Age <span class="value-display"><span id="ageVal">25</span> yrs</span></label>
       <input id="age" type="range" min="20" max="90" value="25">
     </div>
 
@@ -142,17 +142,17 @@
     </div>
 
     <div id="status-panel">
-      <strong>Vulnerability Analysis:</strong><br>
-      <div id="status-text">Synchronizing organ metrics...</div>
+      <strong>Condition Summary:</strong><br>
+      <div id="status-text">Analyzing systemic interactions...</div>
     </div>
   </div>
 
   <div id="viewer-container">
     <div id="heart-view" class="viewport">
-      <div class="label-tag">Cardiac Load</div>
+      <div class="label-tag">Heart</div>
     </div>
     <div id="brain-view" class="viewport">
-      <div class="label-tag">Neural Density</div>
+      <div class="label-tag">Brain</div>
     </div>
   </div>
 
@@ -162,8 +162,8 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
     let brain, heart;
-    const originalBrainColor = new THREE.Color(0xffdbdb); // Constant Healthy Pink
-    const originalHeartColor = new THREE.Color(0xd63031); 
+    const originalBrainColor = new THREE.Color(0xffdbdb);
+    const originalHeartColor = new THREE.Color(0xd63031);
 
     function createViewer(elementId, modelPath, isHeart) {
       const container = document.getElementById(elementId);
@@ -179,10 +179,8 @@
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
 
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x666666, 1.4);
-      scene.add(hemiLight);
-
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x666666, 1.5));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
       dirLight.position.set(5, 5, 5);
       scene.add(dirLight);
 
@@ -191,7 +189,6 @@
         const model = gltf.scene;
         scene.add(model);
         if (isHeart) heart = model; else brain = model;
-        
         model.traverse(n => {
           if(n.isMesh) {
             n.material = new THREE.MeshStandardMaterial({ 
@@ -213,47 +210,69 @@
       requestAnimationFrame(animate);
       const time = Date.now() * 0.001;
 
-      const chronAge = parseFloat(document.getElementById("age").value);
+      const age = parseFloat(document.getElementById("age").value);
       const sleep = parseFloat(document.getElementById("sleep").value);
       const stress = parseFloat(document.getElementById("stress").value);
       const exercise = parseFloat(document.getElementById("exercise").value);
 
-      // --- LOGIC CORRECTION ---
-      // Higher stress/lower sleep = higher BIO AGE (Age acceleration)
-      let reqEx = (chronAge > 65) ? 5 : (chronAge > 40) ? 4 : 3;
-      const stasisPenalty = (exercise < reqEx) ? (reqEx - exercise) * 2 : 0;
+      // --- DYNAMIC REQUIREMENTS LOGIC ---
+      // Sleep requirement increases with stress (recovery needs) but decreases slightly with old age.
+      let reqSleep = (age > 65) ? 7 : 8; 
+      if (stress > 60) reqSleep += 0.5; // High stress needs more sleep for neural cleanup
       
-      const bioAge = Math.round(chronAge + Math.max(0, 7.5 - sleep) * 2.5 + (stress / 100) * 15 + stasisPenalty);
+      // Exercise requirement increases with age to maintain heart elasticity.
+      let reqEx = (age > 65) ? 5 : (age > 40) ? 4 : 3;
+
+      // Interaction Multipliers
+      const sleepDeficit = Math.max(0, reqSleep - sleep);
+      const exerciseDeficit = Math.max(0, reqEx - exercise);
+      
+      // Compounding factors: Stress is 2x more damaging if sleep is low
+      const sleepStressSynergy = (sleepDeficit > 1.5 && stress > 50) ? 2.0 : 1.0;
+      
+      const bioAge = Math.round(age + (sleepDeficit * 3 * sleepStressSynergy) + (stress / 100 * 15) + (exerciseDeficit * 2));
       
       document.getElementById("bioAgeDisp").textContent = bioAge;
-      document.getElementById("ageVal").textContent = chronAge;
+      document.getElementById("ageVal").textContent = age;
       document.getElementById("sleepVal").textContent = sleep;
       document.getElementById("stressVal").textContent = stress;
       document.getElementById("exVal").textContent = exercise;
 
+      // --- VISUAL SCALING ---
       if (brain) {
-        // Brain stays pink, only changes in scale (atrophy simulation)
-        const bScale = Math.max(0.65, 1.0 - (Math.max(0, bioAge - 25) * 0.006));
+        // Brain shrinks faster if sleep is low (Glymphatic failure)
+        const bScale = Math.max(0.65, 1.0 - (Math.max(0, bioAge - age) * 0.008));
         brain.scale.set(bScale, bScale, bScale);
         brain.rotation.y += 0.003;
       }
 
       if (heart) {
-        // Heart scales with stress/age
-        const hScale = 1.0 + (Math.max(0, bioAge - 20) * 0.003) + (stress * 0.0015);
-        const bpm = 0.6 + (stress * 0.02);
+        // Heart strain pulse becomes more erratic with high stress + low sleep
+        const hScale = 1.0 + (Math.max(0, bioAge - age) * 0.004);
+        const bpm = 0.6 + (stress * 0.02) + (sleepDeficit * 0.05);
         const pulse = 1 + (Math.pow(Math.sin(time * bpm * Math.PI), 4) * 0.1);
         heart.scale.set(hScale * pulse, hScale * pulse, hScale * pulse);
         heart.rotation.y += 0.003;
       }
 
-      // Status Text Updates
+      // --- HOLISTIC STATUS ANALYSIS ---
       const statusPanel = document.getElementById("status-text");
-      let message = "";
-      if (exercise < reqEx) message += `<span class="warning">Physical Stasis:</span> Low activity is accelerating arterial thickening.<br><br>`;
-      if (stress > 70) message += `<span class="warning">Chronic Load:</span> Stress is artificially inflating your biological markers by +${Math.round((stress/100)*15)} years.`;
-      
-      statusPanel.innerHTML = message || "Biometrics are stable.";
+      let reports = [];
+
+      if (sleep < reqSleep) {
+        reports.push(`<span class="warning">Sleep Debt:</span> Your body requires ${reqSleep}h of rest for current stress levels. Deficit: ${sleepDeficit}h.`);
+      }
+      if (exercise < reqEx) {
+        reports.push(`<span class="warning">Physical Stasis:</span> Age ${age} requires ${reqEx} days/wk to buffer cardiac strain.`);
+      }
+      if (sleepDeficit > 1 && stress > 60) {
+        reports.push(`<span class="warning">High Synergy Risk:</span> Low sleep is amplifying the damage of high stress by 2x.`);
+      }
+      if (exercise >= reqEx && sleep >= reqSleep) {
+        reports.push(`<span class="positive">Resilient State:</span> Lifestyle factors are neutralizing age-related decay.`);
+      }
+
+      statusPanel.innerHTML = reports.length > 0 ? reports.join("<br>") : "Metrics stabilized.";
 
       heartViewer.controls.update();
       heartViewer.renderer.render(heartViewer.scene, heartViewer.camera);

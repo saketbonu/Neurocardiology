@@ -55,77 +55,62 @@
   </div>
 
   <script type="module">
-    import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
-    import { OrbitControls } from "https://unpkg.com/three@0.152.2/examples/jsm/controls/OrbitControls.js";
-    import { GLTFLoader } from "https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js";
+  import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
+  import { OrbitControls } from "https://unpkg.com/three@0.152.2/examples/jsm/controls/OrbitControls.js";
+  import { GLTFLoader } from "https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js";
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0);
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf0f0f0);
 
-    const camera = new THREE.PerspectiveCamera(
-      60,
-      (window.innerWidth - 280) / window.innerHeight,
-      0.1,
-      100
-    );
-    camera.position.set(0, 1.5, 4);
+  const camera = new THREE.PerspectiveCamera(
+    60,
+    (window.innerWidth - 280) / window.innerHeight,
+    0.1,
+    100
+  );
+  camera.position.set(0, 1.5, 4);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth - 280, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth - 280, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
 
-    const light1 = new THREE.DirectionalLight(0xffffff, 1);
-    light1.position.set(5, 5, 5);
-    scene.add(light1);
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(5, 5, 5);
+  scene.add(light);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  const loader = new GLTFLoader();
 
-    const loader = new GLTFLoader();
+  let brain, heart;
 
-    let brain, heart;
+  loader.load("brain.glb", (gltf) => {
+    brain = gltf.scene;
+    brain.position.x = -0.8;
+    scene.add(brain);
+  });
 
-    loader.load("brain.glb", gltf => {
-      brain = gltf.scene;
-      brain.position.x = -0.8;
-      scene.add(brain);
-    });
+  loader.load("heart.glb", (gltf) => {
+    heart = gltf.scene;
+    heart.position.x = 0.8;
+    scene.add(heart);
+  });
 
-    loader.load("heart.glb", gltf => {
-      heart = gltf.scene;
-      heart.position.x = 0.8;
-      scene.add(heart);
-    });
+  function animate() {
+    requestAnimationFrame(animate);
 
-    function animate() {
-      requestAnimationFrame(animate);
+    if (brain) brain.rotation.y += 0.003;
+    if (heart) heart.rotation.y -= 0.003;
 
-      const sleep = document.getElementById("sleep").value;
-      const stress = document.getElementById("stress").value;
-      const years = document.getElementById("years").value;
+    controls.update();
+    renderer.render(scene, camera);
+  }
 
-      if (heart) {
-        heart.scale.setScalar(1 + stress / 200);
-      }
-
-      if (brain) {
-        brain.rotation.y = years * 0.02;
-      }
-
-      controls.update();
-      renderer.render(scene, camera);
-    }
-
-    animate();
-
-    window.addEventListener("resize", () => {
-      camera.aspect = (window.innerWidth - 280) / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth - 280, window.innerHeight);
-    });
-  </script>
+  animate();
+</script>
 
 </body>
 </html>
+

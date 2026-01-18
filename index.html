@@ -1,84 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Brains2Heart Simulation</title>
-  <style>
-    body { margin:0; overflow:hidden; font-family:sans-serif; }
-    #ui {
-      position: absolute; top:10px; left:10px; background: rgba(255,255,255,0.85);
-      padding: 10px; border-radius: 8px;
-      max-width: 250px;
-    }
-    #ui label { display: block; margin-top: 5px; }
-    #stats { margin-top:10px; }
-  </style>
+<meta charset="UTF-8" />
+<title>Brains2Heart Simulation</title>
+<style>
+  body { margin:0; overflow:hidden; background:#111; }
+  #ui {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(255,255,255,0.9);
+    padding: 12px;
+    border-radius: 10px;
+    width: 230px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+  }
+  label { display:block; margin-top:8px; }
+</style>
 </head>
+
 <body>
+
 <div id="ui">
-  <label>Sleep Hours: <span id="sleepVal">7</span>
-    <input type="range" id="sleepSlider" min="4" max="10" value="7">
+  <label>Sleep (hrs): <span id="sleepVal">7</span>
+    <input id="sleep" type="range" min="4" max="10" value="7">
   </label>
-  <label>Stress Level: <span id="stressVal">5</span>
-    <input type="range" id="stressSlider" min="0" max="10" value="5">
-  </label>
-  <label>Exercise: <span id="exerciseVal">5</span>
-    <input type="range" id="exerciseSlider" min="0" max="10" value="5">
+  <label>Stress: <span id="stressVal">5</span>
+    <input id="stress" type="range" min="0" max="10" value="5">
   </label>
   <label>Years: <span id="yearVal">0</span>
-    <input type="range" id="yearSlider" min="0" max="10" value="0">
+    <input id="years" type="range" min="0" max="20" value="0">
   </label>
-  <div id="stats">
-    <strong>Brain Health:</strong> <span id="brainStat">100%</span><br>
-    <strong>Heart Health:</strong> <span id="heartStat">100%</span>
-  </div>
 </div>
 
-<!-- Three.js -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.154.0/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.154.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.154/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.154/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.154/examples/js/loaders/GLTFLoader.js"></script>
 
 <script>
 let scene, camera, renderer, controls;
 let brain, heart;
+let clock = new THREE.Clock();
 
 init();
 animate();
 
 function init() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xf0f0f0);
+  scene.background = new THREE.Color(0x111111);
 
   camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
-  camera.position.set(0,2,5);
+  camera.position.set(0, 2, 6);
 
-  renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer = new THREE.WebGLRenderer({ antialias:true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
   controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
 
-  const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(5,10,5);
-  scene.add(light);
+  // LIGHTS
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  const dir = new THREE.DirectionalLight(0xffffff, 1);
+  dir.position.set(5,10,5);
+  scene.add(dir);
 
   const loader = new THREE.GLTFLoader();
 
-  // Load Brain
-  loader.load('brain.glb', function(gltf){
+  // LOAD BRAIN
+  loader.load('brain.glb', gltf => {
     brain = gltf.scene;
     brain.scale.set(0.01,0.01,0.01);
-    brain.position.set(-1,0,0);
+    brain.position.set(-1.2,0,0);
+
+    brain.traverse(m => {
+      if (m.isMesh) {
+        m.material = new THREE.MeshStandardMaterial({
+          color: 0xff9999,
+          roughness: 0.7,
+          side: THREE.DoubleSide
+        });
+      }
+    });
+
     scene.add(brain);
   });
 
-  // Load Heart
-  loader.load('heart.glb', function(gltf){
+  // LOAD HEART
+  loader.load('heart.glb', gltf => {
     heart = gltf.scene;
     heart.scale.set(0.01,0.01,0.01);
-    heart.position.set(1,0,0);
+    heart.position.set(1.2,0,0);
+
+    heart.traverse(m => {
+      if (m.isMesh) {
+        m.material = new THREE.MeshStandardMaterial({
+          color: 0xcc0000,
+          roughness: 0.6
+        });
+      }
+    });
+
     scene.add(heart);
   });
 
@@ -87,46 +110,66 @@ function init() {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
-
-  // Slider events
-  document.getElementById('sleepSlider').addEventListener('input', updateStats);
-  document.getElementById('stressSlider').addEventListener('input', updateStats);
-  document.getElementById('exerciseSlider').addEventListener('input', updateStats);
-  document.getElementById('yearSlider').addEventListener('input', updateStats);
 }
 
-function updateStats(){
-  const sleep = parseFloat(document.getElementById('sleepSlider').value);
-  const stress = parseFloat(document.getElementById('stressSlider').value);
-  const exercise = parseFloat(document.getElementById('exerciseSlider').value);
-  const year = parseFloat(document.getElementById('yearSlider').value);
-
-  document.getElementById('sleepVal').innerText = sleep;
-  document.getElementById('stressVal').innerText = stress;
-  document.getElementById('exerciseVal').innerText = exercise;
-  document.getElementById('yearVal').innerText = year;
-
-  let brainHealth = 100 - (10*(7-sleep)) - (5*stress) + (3*exercise) - (year*2);
-  let heartHealth = 100 - (5*stress) + (2*exercise) - (year*2);
-
-  brainHealth = Math.max(0, Math.min(100, brainHealth));
-  heartHealth = Math.max(0, Math.min(100, heartHealth));
-
-  document.getElementById('brainStat').innerText = brainHealth.toFixed(0)+'%';
-  document.getElementById('heartStat').innerText = heartHealth.toFixed(0)+'%';
-
-  // Visual changes
-  if(brain) brain.scale.set(0.01*brainHealth/100, 0.01*brainHealth/100, 0.01*brainHealth/100);
-  if(brain) brain.traverse(c => { if(c.material) c.material.color.setHSL(brainHealth/300,1,0.5); });
-
-  if(heart) heart.scale.set(0.01*heartHealth/100, 0.01*heartHealth/100, 0.01*heartHealth/100);
-  if(heart) heart.traverse(c => { if(c.material) c.material.color.setHSL(heartHealth/300,1,0.5); });
-}
-
-function animate(){
+function animate() {
   requestAnimationFrame(animate);
+  controls.update();
+
+  const t = clock.getElapsedTime();
+
+  // ROTATION
+  if (brain) brain.rotation.y += 0.003;
+  if (heart) heart.rotation.y -= 0.003;
+
+  // HEART PULSE
+  if (heart) {
+    const pulse = 1 + Math.sin(t * 4) * 0.05;
+    heart.scale.set(0.01*pulse,0.01*pulse,0.01*pulse);
+  }
+
+  updateHealth();
   renderer.render(scene, camera);
 }
+
+function updateHealth() {
+  const sleep = +sleepSlider.value;
+  const stress = +stressSlider.value;
+  const years = +yearSlider.value;
+
+  sleepVal.textContent = sleep;
+  stressVal.textContent = stress;
+  yearVal.textContent = years;
+
+  let brainHealth = 100 - (7-sleep)*8 - stress*4 - years*1.5;
+  let heartHealth = 100 - stress*5 - years*2;
+
+  brainHealth = Math.max(20, brainHealth);
+  heartHealth = Math.max(20, heartHealth);
+
+  if (brain) {
+    brain.traverse(m => {
+      if (m.isMesh)
+        m.material.color.setHSL(0.02, 1, brainHealth/150);
+    });
+  }
+
+  if (heart) {
+    heart.traverse(m => {
+      if (m.isMesh)
+        m.material.color.setHSL(0, 1, heartHealth/150);
+    });
+  }
+}
+
+// UI
+const sleepSlider = document.getElementById('sleep');
+const stressSlider = document.getElementById('stress');
+const yearSlider = document.getElementById('years');
+const sleepVal = document.getElementById('sleepVal');
+const stressVal = document.getElementById('stressVal');
+const yearVal = document.getElementById('yearVal');
 </script>
+
 </body>
 </html>

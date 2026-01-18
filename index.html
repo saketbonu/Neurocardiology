@@ -9,67 +9,55 @@
       margin: 0;
       display: flex;
       height: 100vh;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #050505; /* Dark background for glowing effects */
+      font-family: 'Segoe UI', sans-serif;
+      background: #0a0a0c; 
       color: white;
       overflow: hidden;
     }
 
     #sidebar {
       width: 320px;
-      background: #1a1a1a;
+      background: #151518;
       padding: 25px;
       box-shadow: 2px 0 15px rgba(0,0,0,0.5);
       box-sizing: border-box;
-      z-index: 10;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid #333;
+      border-right: 1px solid #2a2a2e;
     }
 
-    h2 { margin-top: 0; color: #00d4ff; font-size: 1.5rem; }
-    p { font-size: 0.9rem; color: #aaa; margin-bottom: 20px; }
+    h2 { margin: 0 0 5px 0; color: #00d4ff; font-size: 1.4rem; }
+    .desc { font-size: 0.8rem; color: #777; margin-bottom: 25px; }
 
-    .control { margin-bottom: 20px; }
+    .control { margin-bottom: 22px; }
     .control label {
       display: block;
-      font-weight: bold;
+      font-weight: 600;
       margin-bottom: 8px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      color: #bbb;
     }
 
-    .value-display {
-      font-size: 1rem;
-      color: #00d4ff;
-      float: right;
-    }
+    .value-display { font-size: 0.9rem; color: #00d4ff; float: right; }
 
     input[type=range] {
       width: 100%;
-      margin-top: 5px;
+      accent-color: #00d4ff;
       cursor: pointer;
     }
 
     #status-panel {
       margin-top: auto;
       padding: 15px;
-      background: #252525;
-      border-radius: 8px;
+      background: #1c1c21;
+      border-radius: 6px;
       border-left: 4px solid #00d4ff;
     }
 
-    #status-text {
-      font-size: 0.85rem;
-      line-height: 1.4;
-      color: #eee;
-    }
+    #status-text { font-size: 0.85rem; line-height: 1.4; color: #ccc; }
 
-    canvas {
-      flex-grow: 1;
-      outline: none;
-    }
+    canvas { flex-grow: 1; outline: none; }
   </style>
 
   <script type="importmap">
@@ -85,26 +73,31 @@
 
   <div id="sidebar">
     <h2>Brains2Heart</h2>
-    <p>Simulating neurocardiac impact over time.</p>
+    <div class="desc">Biometric Feedback Visualization</div>
 
     <div class="control">
-      <label for="sleep">Sleep <span class="value-display"><span id="sleepVal">7</span>h</span></label>
+      <label>Sleep <span class="value-display"><span id="sleepVal">7</span>h</span></label>
       <input id="sleep" type="range" min="4" max="9" step="0.5" value="7">
     </div>
 
     <div class="control">
-      <label for="stress">Stress Level <span class="value-display"><span id="stressVal">20</span>%</span></label>
+      <label>Stress <span class="value-display"><span id="stressVal">20</span>%</span></label>
       <input id="stress" type="range" min="0" max="100" value="20">
     </div>
 
     <div class="control">
-      <label for="years">Timeline <span class="value-display"><span id="yearsVal">0</span> yrs</span></label>
+      <label>Exercise <span class="value-display"><span id="exVal">3</span>d/wk</span></label>
+      <input id="exercise" type="range" min="0" max="7" value="3">
+    </div>
+
+    <div class="control">
+      <label>Timeline <span class="value-display"><span id="yearsVal">0</span> yrs</span></label>
       <input id="years" type="range" min="0" max="30" value="0">
     </div>
 
     <div id="status-panel">
-      <strong>Health Projection:</strong><br>
-      <div id="status-text">Lungs and Heart stable. Optimal neuro-regeneration.</div>
+      <strong>Health Forecast:</strong><br>
+      <div id="status-text">Select parameters to begin simulation.</div>
     </div>
   </div>
 
@@ -113,12 +106,11 @@
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-    // --- Scene Setup ---
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x050505);
+    scene.background = new THREE.Color(0x0a0a0c);
 
     const camera = new THREE.PerspectiveCamera(45, (window.innerWidth - 320) / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 6);
+    camera.position.set(0, 1, 6);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth - 320, window.innerHeight);
@@ -130,101 +122,108 @@
 
     // --- Lights ---
     scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-    const mainLight = new THREE.PointLight(0x00d4ff, 1.5);
-    mainLight.position.set(5, 5, 5);
-    scene.add(mainLight);
-
-    const backLight = new THREE.PointLight(0xff0055, 1);
-    backLight.position.set(-5, -5, -5);
-    scene.add(backLight);
+    const light1 = new THREE.PointLight(0xffffff, 1);
+    light1.position.set(5, 5, 5);
+    scene.add(light1);
 
     // --- Models ---
     const loader = new GLTFLoader();
     let brain, heart;
 
-    // Load Brain
+    // Healthy Colors
+    const brainColor = new THREE.Color(0xffdbdb); // Healthy Pinkish White
+    const heartColor = new THREE.Color(0xd63031); // Healthy Deep Red
+
     loader.load("./brain.glb", (gltf) => {
       brain = gltf.scene;
       brain.position.x = -1.5;
       scene.add(brain);
-      brain.traverse(n => { if(n.isMesh) n.material = new THREE.MeshStandardMaterial({ color: 0xeeeeee }); });
-    }, undefined, (e) => console.error("Missing brain.glb"));
+      brain.traverse(n => { 
+        if(n.isMesh) n.material = new THREE.MeshStandardMaterial({ color: brainColor.clone() }); 
+      });
+    });
 
-    // Load Heart
     loader.load("./heart.glb", (gltf) => {
       heart = gltf.scene;
       heart.position.x = 1.5;
       scene.add(heart);
-      heart.traverse(n => { if(n.isMesh) n.material = new THREE.MeshStandardMaterial({ color: 0xff3333 }); });
-    }, undefined, (e) => console.error("Missing heart.glb"));
+      heart.traverse(n => { 
+        if(n.isMesh) n.material = new THREE.MeshStandardMaterial({ color: heartColor.clone() }); 
+      });
+    });
 
-    // --- Logic Variables ---
-    const sleepIn = document.getElementById("sleep");
-    const stressIn = document.getElementById("stress");
-    const yearsIn = document.getElementById("years");
+    // --- Inputs ---
+    const iSleep = document.getElementById("sleep");
+    const iStress = document.getElementById("stress");
+    const iEx = document.getElementById("exercise");
+    const iYears = document.getElementById("years");
     const statusText = document.getElementById("status-text");
 
-    // --- Animation Loop ---
     function animate() {
       requestAnimationFrame(animate);
 
-      const yrs = parseFloat(yearsIn.value);
-      const slp = parseFloat(sleepIn.value);
-      const str = parseFloat(stressIn.value);
+      const yrs = parseFloat(iYears.value);
+      const slp = parseFloat(iSleep.value);
+      const str = parseFloat(iStress.value);
+      const exe = parseFloat(iEx.value);
 
       // Update UI Text
       document.getElementById("sleepVal").textContent = slp;
       document.getElementById("stressVal").textContent = str;
+      document.getElementById("exVal").textContent = exe;
       document.getElementById("yearsVal").textContent = yrs;
 
-      // Rule 1: Brain Shrinkage (1% per year of deficit)
+      const time = Date.now() * 0.001;
+
+      // --- BRAIN LOGIC ---
       if (brain) {
-        const sleepDeficit = Math.max(0, 7 - slp); 
-        const brainShrink = 1.0 - (yrs * sleepDeficit * 0.012); 
-        brain.scale.set(brainShrink, brainShrink, brainShrink);
-        
-        // Color Change: Greyish/Yellow for atrophy
+        const sleepDeficit = Math.max(0, 7 - slp);
+        // Exercise slows brain shrinkage by 30%
+        const shrinkRate = (sleepDeficit * 0.01) * (1 - (exe * 0.05));
+        const bScale = 1.0 - (yrs * shrinkRate);
+        brain.scale.set(bScale, bScale, bScale);
+
+        // Color Logic: Shift from pinkish-white to pale-grey
         brain.traverse(n => {
           if(n.isMesh) {
-            const healthFactor = 1 - (yrs * sleepDeficit * 0.005);
-            n.material.color.setRGB(healthFactor, healthFactor, healthFactor);
+            const paleness = Math.min(1, (yrs * sleepDeficit) / 50);
+            n.material.color.lerpColors(brainColor, new THREE.Color(0x999999), paleness);
           }
         });
       }
 
-      // Rule 2: Heart Thickening (Hypertrophy) & Pulse Speed
+      // --- HEART LOGIC ---
       if (heart) {
-        // Base scale increases with stress + time
-        const heartBaseScale = 1.0 + (str * 0.003) + (yrs * 0.006);
+        // Exercise mitigates stress impact
+        const netStress = Math.max(0, str - (exe * 10));
+        const hBaseScale = 1.0 + (netStress * 0.002) + (yrs * 0.004);
         
-        // Pulse logic
-        const pulseSpeed = 0.004 + (str * 0.0003);
-        const pulse = 1 + Math.sin(Date.now() * pulseSpeed) * (0.04 + (str * 0.001));
+        // Organic "Lub-Dub" Beat Logic
+        // Uses a sharper sine wave to feel more like a pulse
+        const beatCycle = time * (0.8 + (str * 0.02)); 
+        const heartPulse = 1 + (Math.pow(Math.sin(beatCycle * Math.PI), 4) * 0.08);
         
-        heart.scale.set(heartBaseScale * pulse, heartBaseScale * pulse, heartBaseScale * pulse);
+        heart.scale.set(hBaseScale * heartPulse, hBaseScale * heartPulse, hBaseScale * heartPulse);
 
-        // Rule 3: Visual damage (Emissive glow)
+        // Visual Damage: Emissive glow only at high stress + years
         heart.traverse(n => {
           if(n.isMesh) {
             n.material.emissive = new THREE.Color(0xff0000);
-            n.material.emissiveIntensity = (str / 100) * (yrs / 20);
+            n.material.emissiveIntensity = (netStress / 100) * (yrs / 25);
           }
         });
       }
 
-      // Dynamic Status Message
-      if (yrs > 5) {
-        if (slp < 6 && str > 60) {
-          statusText.innerHTML = "<span style='color:#ff4444'>CRITICAL:</span> High cortical atrophy and cardiac strain detected.";
-        } else if (slp < 6) {
-          statusText.innerText = "WARNING: Prolonged sleep deficit reducing brain volume.";
-        } else if (str > 60) {
-          statusText.innerText = "WARNING: Chronic stress causing ventricular thickening.";
-        } else {
-          statusText.innerText = "Age-related changes within normal parameters.";
-        }
+      // --- STATUS FEEDBACK ---
+      if (yrs < 2) {
+        statusText.innerText = "Baseline readings established. Monitoring physiological trends.";
       } else {
-        statusText.innerText = "System stabilizing. Early stage monitoring.";
+        const heartRisk = (str > 70 && exe < 2);
+        const brainRisk = (slp < 6);
+        if (heartRisk && brainRisk) statusText.innerHTML = "<span style='color:#ff7675'>CRITICAL:</span> High risk of neuro-cardiac inflammation.";
+        else if (heartRisk) statusText.innerText = "Cardiac strain detected. Increase exercise to buffer arterial pressure.";
+        else if (brainRisk) statusText.innerText = "Cognitive fatigue likely. Neural volume shows decline due to sleep deficit.";
+        else statusText.innerText = "Homeostasis maintained. Lifestyle buffers are effective.";
       }
 
       controls.update();

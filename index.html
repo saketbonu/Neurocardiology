@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Brain & Heart – Interactive Physiological Lab</title>
+  <title>Brain & Heart – Static Physiological Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -140,7 +140,7 @@
 
   <div id="viewer-container">
     <div id="heart-view" class="viewport"><div class="label-tag">Heart Rate: <span id="bpmDisplay">60</span> BPM</div></div>
-    <div id="brain-view" class="viewport"><div class="label-tag">Brain Activity</div></div>
+    <div id="brain-view" class="viewport"><div class="label-tag">Brain Health</div></div>
   </div>
 
   <script type="module">
@@ -153,23 +153,22 @@
       const container = document.getElementById(id);
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(35, container.clientWidth/container.clientHeight, 0.1, 1000);
-      camera.position.z = 4.5;
+      camera.position.z = 4.0; // Brought camera closer for a larger view
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
       container.appendChild(renderer.domElement);
       
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
-      controls.autoRotate = false; // Explicitly disabled
       
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.8));
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 2.0));
       
       new GLTFLoader().load(path, (gltf) => {
         const model = gltf.scene;
         scene.add(model);
         if(isHeart) heart = model; else brain = model;
         model.traverse(n => { if(n.isMesh) n.material = new THREE.MeshStandardMaterial({ 
-          color: isHeart ? 0xd63031 : 0xffdbdb, roughness: 0.3, metalness: 0.1 
+          color: isHeart ? 0xd63031 : 0xffdbdb, roughness: 0.3, metalness: 0.05 
         }); });
       });
       return { scene, camera, renderer, controls };
@@ -186,7 +185,6 @@
       const exercise = parseFloat(document.getElementById("exercise").value);
 
       let hStress = 0, bStress = 0, hMitigate = 0, bMitigate = 0;
-      
       document.querySelectorAll('.stress-check:checked').forEach(c => {
         if(c.dataset.target === 'heart') hStress += parseFloat(c.dataset.val);
         else bStress += parseFloat(c.dataset.val);
@@ -214,24 +212,22 @@
         document.getElementById("bpmDisplay").textContent = Math.round(bpmValue);
         const pulse = 1 + (Math.pow(Math.sin(time * freq * Math.PI), 4) * 0.08);
         heart.scale.set(heartSize * pulse, heartSize * pulse, heartSize * pulse);
-        // Auto-rotation logic removed
       }
 
       if(brain) {
         const brainSize = Math.max(0.65, 1.0 - ((bioAge - age) * 0.008));
         brain.scale.set(brainSize, brainSize, brainSize);
-        brain.position.y = Math.sin(time * 0.5) * 0.05; 
-        // Auto-rotation logic removed
+        // Position and rotation are now fully static
+        brain.position.y = 0; 
       }
 
       const statusText = document.getElementById("status-text");
       let reports = [];
-      if (exercise < reqEx) reports.push(`<span class="warning">Low Cardiac Reserve:</span> At ${age}y, ${reqEx} days of activity are needed. Currently missing ${reqEx - exercise} days.`);
-      if (sleep < reqSleep) reports.push(`<span class="warning">Glymphatic Failure:</span> Sleep deficit is preventing neural metabolic clearance.`);
-      if (hStress > 10 && exercise < 2) reports.push(`<span class="warning">Tachycardic Risk:</span> High resting heart rate detected due to lack of aerobic buffer.`);
-      if (bMitigate > bStress) reports.push(`<span class="positive">Neural Resilience:</span> High cognitive buffer detected.`);
-
-      statusText.innerHTML = reports.length ? reports.join("<br><br>") : "Optimal Homeostasis reached.";
+      if (exercise < reqEx) reports.push(`<span class="warning">Low Cardiac Reserve:</span> Age ${age}y requires ${reqEx} days/wk. Missing ${reqEx - exercise} days.`);
+      if (sleep < reqSleep) reports.push(`<span class="warning">Glymphatic Failure:</span> Insufficient sleep is preventing waste clearance in the brain.`);
+      if (hStress > 10 && exercise < 2) reports.push(`<span class="warning">Cardiac Strain:</span> Elevated resting heart rate detected.`);
+      
+      statusText.innerHTML = reports.length ? reports.join("<br><br>") : "Optimal biological homeostasis.";
 
       hV.controls.update();
       hV.renderer.render(hV.scene, hV.camera);

@@ -2,103 +2,118 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Brain & Heart – Holistic Health Simulation</title>
+  <title>Brain & Heart – Clinical Research Simulation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
       display: flex;
       height: 100vh;
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
       color: #333;
       overflow: hidden;
     }
 
     #sidebar {
-      width: 350px;
-      background: rgba(255, 255, 255, 0.85);
+      width: 400px;
+      background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       padding: 25px;
-      box-shadow: 5px 0 15px rgba(0,0,0,0.05);
+      box-shadow: 5px 0 20px rgba(0,0,0,0.1);
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid rgba(255, 255, 255, 0.4);
       z-index: 10;
+      overflow-y: auto;
     }
 
-    h2 { margin: 0; color: #2c3e50; font-size: 1.6rem; letter-spacing: -0.5px; }
-    .desc { font-size: 0.8rem; color: #5a6772; margin-bottom: 20px; }
-
+    h2 { margin: 0; color: #2c3e50; font-size: 1.5rem; }
     .bio-age-box {
       text-align: center;
-      padding: 12px;
-      margin-bottom: 20px;
+      padding: 15px;
+      margin: 20px 0;
       background: #2c3e50;
       color: white;
-      border-radius: 8px;
+      border-radius: 12px;
+      border-bottom: 5px solid #3498db;
     }
-    .bio-age-box big { font-size: 1.8rem; font-weight: bold; display: block; }
+    .bio-age-box big { font-size: 2.2rem; font-weight: bold; display: block; }
 
-    .control { margin-bottom: 18px; }
-    .control label {
-      display: block;
-      font-weight: 700;
-      margin-bottom: 5px;
-      font-size: 0.7rem;
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 800;
       text-transform: uppercase;
-      color: #444;
+      color: #7f8c8d;
+      margin: 20px 0 10px;
+      letter-spacing: 1px;
     }
-    .value-display { font-size: 0.9rem; color: #2980b9; float: right; font-weight: bold; }
 
+    .checklist-group {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      font-size: 0.85rem;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .activity-item:hover { border-color: #3498db; }
+    .activity-item input { margin-right: 12px; transform: scale(1.2); }
+
+    .control { margin-bottom: 20px; }
+    .control label { display: block; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: #444; }
+    .value-display { font-size: 0.9rem; color: #2980b9; float: right; font-weight: bold; }
     input[type=range] { width: 100%; accent-color: #2980b9; cursor: pointer; }
 
     #status-panel {
-      margin-top: auto;
       padding: 15px;
-      background: rgba(255, 255, 255, 0.6);
-      border-radius: 10px;
-      border-left: 5px solid #2980b9;
+      background: #fff;
+      border-radius: 12px;
+      border-left: 5px solid #3498db;
       font-size: 0.82rem;
-      min-height: 140px;
-      overflow-y: auto;
+      line-height: 1.5;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
 
     #viewer-container {
       flex-grow: 1;
       display: flex;
-      flex-direction: row;
       gap: 15px;
       padding: 15px;
     }
 
     .viewport {
       flex: 1;
-      background: radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(200,200,200,0.1) 100%);
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      background: radial-gradient(circle, #ffffff 0%, #e0e0e0 100%);
+      border-radius: 24px;
       position: relative;
-      overflow: hidden;
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.05);
     }
 
     .label-tag {
       position: absolute;
-      top: 15px;
-      left: 15px;
-      background: rgba(44, 62, 80, 0.8);
+      top: 20px;
+      left: 20px;
+      background: rgba(44, 62, 80, 0.9);
       color: white;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.75rem;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 0.8rem;
       font-weight: bold;
-      pointer-events: none;
       text-transform: uppercase;
     }
 
-    .warning { color: #d63031; font-weight: bold; display: block; margin-bottom: 4px; }
-    .positive { color: #27ae60; font-weight: bold; display: block; margin-bottom: 4px; }
+    .warning { color: #e74c3c; font-weight: bold; }
+    .positive { color: #27ae60; font-weight: bold; }
   </style>
 
   <script type="importmap">
@@ -113,47 +128,46 @@
 <body>
 
   <div id="sidebar">
-    <h2>Brain & Heart</h2>
-    <div class="desc">Biological Health Simulator</div>
-
+    <h2>Clinical Insights</h2>
     <div class="bio-age-box">
-      <small>ESTIMATED BIOLOGICAL AGE</small>
+      <small>CALCULATED BIOLOGICAL AGE</small>
       <big id="bioAgeDisp">25</big>
     </div>
 
     <div class="control">
-      <label>Age <span class="value-display"><span id="ageVal">25</span> yrs</span></label>
+      <label>Chronological Age <span class="value-display"><span id="ageVal">25</span>y</span></label>
       <input id="age" type="range" min="20" max="90" value="25">
     </div>
 
     <div class="control">
-      <label>Sleep <span class="value-display"><span id="sleepVal">7</span>h</span></label>
-      <input id="sleep" type="range" min="4" max="9" step="0.5" value="7">
+      <label>Nightly Sleep <span class="value-display"><span id="sleepVal">7.5</span>h</span></label>
+      <input id="sleep" type="range" min="4" max="10" step="0.5" value="7.5">
     </div>
 
-    <div class="control">
-      <label>Stress <span class="value-display"><span id="stressVal">20</span>%</span></label>
-      <input id="stress" type="range" min="0" max="100" value="20">
+    <div class="section-title">Stressors (Epigenetic Load)</div>
+    <div class="checklist-group">
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="11" data-type="heart"> Social Isolation</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="7" data-type="heart"> Processed Diet</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="8" data-type="brain"> High Work Pressure</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="5" data-type="heart"> Chronic Stimulants</label>
     </div>
 
-    <div class="control">
-      <label>Exercise <span class="value-display"><span id="exVal">3</span>d/wk</span></label>
-      <input id="exercise" type="range" min="0" max="7" value="3">
+    <div class="section-title">Mitigators (Resilience Factors)</div>
+    <div class="checklist-group">
+      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="9" data-type="brain"> High-Intensity Exercise</label>
+      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="6" data-type="heart"> Deep Social Connection</label>
+      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="4" data-type="brain"> Daily Meditation</label>
     </div>
 
     <div id="status-panel">
       <strong>Condition Summary:</strong><br>
-      <div id="status-text">Analyzing systemic interactions...</div>
+      <div id="status-text">Select factors to begin clinical analysis...</div>
     </div>
   </div>
 
   <div id="viewer-container">
-    <div id="heart-view" class="viewport">
-      <div class="label-tag">Heart</div>
-    </div>
-    <div id="brain-view" class="viewport">
-      <div class="label-tag">Brain</div>
-    </div>
+    <div id="heart-view" class="viewport"><div class="label-tag">Heart</div></div>
+    <div id="brain-view" class="viewport"><div class="label-tag">Brain</div></div>
   </div>
 
   <script type="module">
@@ -162,134 +176,99 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
     let brain, heart;
-    const originalBrainColor = new THREE.Color(0xffdbdb);
-    const originalHeartColor = new THREE.Color(0xd63031);
+    const colors = { brain: 0xffdbdb, heart: 0xd63031 };
 
-    function createViewer(elementId, modelPath, isHeart) {
-      const container = document.getElementById(elementId);
+    function createViewer(id, path, isHeart) {
+      const container = document.getElementById(id);
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(35, container.clientWidth / container.clientHeight, 0.1, 1000);
-      camera.position.set(0, 0, 4.5);
-
+      const camera = new THREE.PerspectiveCamera(35, container.clientWidth/container.clientHeight, 0.1, 1000);
+      camera.position.z = 4.5;
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setPixelRatio(window.devicePixelRatio);
       container.appendChild(renderer.domElement);
-
-      const controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x666666, 1.5));
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-      dirLight.position.set(5, 5, 5);
-      scene.add(dirLight);
-
+      new OrbitControls(camera, renderer.domElement).enableDamping = true;
+      
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.8));
       const loader = new GLTFLoader();
-      loader.load(modelPath, (gltf) => {
+      loader.load(path, (gltf) => {
         const model = gltf.scene;
         scene.add(model);
-        if (isHeart) heart = model; else brain = model;
-        model.traverse(n => {
-          if(n.isMesh) {
-            n.material = new THREE.MeshStandardMaterial({ 
-              color: isHeart ? originalHeartColor.clone() : originalBrainColor.clone(),
-              roughness: 0.3,
-              metalness: 0.05
-            });
-          }
-        });
+        if(isHeart) heart = model; else brain = model;
+        model.traverse(n => { if(n.isMesh) n.material = new THREE.MeshStandardMaterial({ 
+          color: isHeart ? colors.heart : colors.brain, roughness: 0.3, metalness: 0.1 
+        }); });
       });
-
-      return { scene, camera, renderer, controls, isHeart };
+      return { scene, camera, renderer };
     }
 
-    const heartViewer = createViewer('heart-view', './heart.glb', true);
-    const brainViewer = createViewer('brain-view', './brain.glb', false);
+    const hV = createViewer('heart-view', './heart.glb', true);
+    const bV = createViewer('brain-view', './brain.glb', false);
 
     function animate() {
       requestAnimationFrame(animate);
       const time = Date.now() * 0.001;
-
       const age = parseFloat(document.getElementById("age").value);
       const sleep = parseFloat(document.getElementById("sleep").value);
-      const stress = parseFloat(document.getElementById("stress").value);
-      const exercise = parseFloat(document.getElementById("exercise").value);
 
-      // --- DYNAMIC REQUIREMENTS LOGIC ---
-      // Sleep requirement increases with stress (recovery needs) but decreases slightly with old age.
-      let reqSleep = (age > 65) ? 7 : 8; 
-      if (stress > 60) reqSleep += 0.5; // High stress needs more sleep for neural cleanup
-      
-      // Exercise requirement increases with age to maintain heart elasticity.
-      let reqEx = (age > 65) ? 5 : (age > 40) ? 4 : 3;
+      let sLoad = 0, mLoad = 0;
+      document.querySelectorAll('.stress-check:checked').forEach(c => sLoad += parseFloat(c.dataset.val));
+      document.querySelectorAll('.reduce-check:checked').forEach(c => mLoad += parseFloat(c.dataset.val));
 
-      // Interaction Multipliers
+      // Research Values: Younger need more sleep; Stress increases need
+      let reqSleep = (age > 60) ? 7.0 : 8.0;
+      if (sLoad > 15) reqSleep += 0.5;
       const sleepDeficit = Math.max(0, reqSleep - sleep);
-      const exerciseDeficit = Math.max(0, reqEx - exercise);
       
-      // Compounding factors: Stress is 2x more damaging if sleep is low
-      const sleepStressSynergy = (sleepDeficit > 1.5 && stress > 50) ? 2.0 : 1.0;
-      
-      const bioAge = Math.round(age + (sleepDeficit * 3 * sleepStressSynergy) + (stress / 100 * 15) + (exerciseDeficit * 2));
-      
+      const bioAge = Math.round(age + (sleepDeficit * 2.5) + (sLoad - mLoad));
       document.getElementById("bioAgeDisp").textContent = bioAge;
       document.getElementById("ageVal").textContent = age;
       document.getElementById("sleepVal").textContent = sleep;
-      document.getElementById("stressVal").textContent = stress;
-      document.getElementById("exVal").textContent = exercise;
 
-      // --- VISUAL SCALING ---
-      if (brain) {
-        // Brain shrinks faster if sleep is low (Glymphatic failure)
-        const bScale = Math.max(0.65, 1.0 - (Math.max(0, bioAge - age) * 0.008));
-        brain.scale.set(bScale, bScale, bScale);
-        brain.rotation.y += 0.003;
+      // Logic: Brain Atrophy vs Heart Hypertrophy
+      if(brain) {
+        const atrophy = Math.max(0.65, 1.0 - ((bioAge - age) * 0.008));
+        brain.scale.set(atrophy, atrophy, atrophy);
+        brain.rotation.y += 0.002;
       }
-
-      if (heart) {
-        // Heart strain pulse becomes more erratic with high stress + low sleep
-        const hScale = 1.0 + (Math.max(0, bioAge - age) * 0.004);
-        const bpm = 0.6 + (stress * 0.02) + (sleepDeficit * 0.05);
+      if(heart) {
+        const strain = 1.0 + ((bioAge - age) * 0.005);
+        const bpm = 0.6 + (sLoad * 0.02) - (mLoad * 0.01);
         const pulse = 1 + (Math.pow(Math.sin(time * bpm * Math.PI), 4) * 0.1);
-        heart.scale.set(hScale * pulse, hScale * pulse, hScale * pulse);
-        heart.rotation.y += 0.003;
+        heart.scale.set(strain * pulse, strain * pulse, strain * pulse);
+        heart.rotation.y += 0.002;
       }
 
-      // --- HOLISTIC STATUS ANALYSIS ---
-      const statusPanel = document.getElementById("status-text");
+      // --- DYNAMIC CONDITION SUMMARY ---
+      const statusText = document.getElementById("status-text");
       let reports = [];
 
-      if (sleep < reqSleep) {
-        reports.push(`<span class="warning">Sleep Debt:</span> Your body requires ${reqSleep}h of rest for current stress levels. Deficit: ${sleepDeficit}h.`);
-      }
-      if (exercise < reqEx) {
-        reports.push(`<span class="warning">Physical Stasis:</span> Age ${age} requires ${reqEx} days/wk to buffer cardiac strain.`);
-      }
-      if (sleepDeficit > 1 && stress > 60) {
-        reports.push(`<span class="warning">High Synergy Risk:</span> Low sleep is amplifying the damage of high stress by 2x.`);
-      }
-      if (exercise >= reqEx && sleep >= reqSleep) {
-        reports.push(`<span class="positive">Resilient State:</span> Lifestyle factors are neutralizing age-related decay.`);
+      // Sleep Reporting
+      if (sleepDeficit > 0) {
+        const msg = age < 40 ? "impeding neuroplastic recovery" : "accelerating metabolic waste accumulation";
+        reports.push(`<span class="warning">Sleep Deficiency:</span> You are ${sleepDeficit}h below the ${reqSleep}h requirement, ${msg}.`);
       }
 
-      statusPanel.innerHTML = reports.length > 0 ? reports.join("<br>") : "Metrics stabilized.";
+      // Age-Specific Risk
+      if (age < 40 && sLoad > 15) {
+        reports.push(`<span class="warning">Pre-Frontal Load:</span> High stress at your age is linked to early hippocampal volume loss.`);
+      } else if (age >= 60 && sLoad > 10) {
+        reports.push(`<span class="warning">Cardiac Stiffness:</span> Reduced arterial elasticity makes you 3x more vulnerable to dietary sodium and isolation.`);
+      }
 
-      heartViewer.controls.update();
-      heartViewer.renderer.render(heartViewer.scene, heartViewer.camera);
-      brainViewer.controls.update();
-      brainViewer.renderer.render(brainViewer.scene, brainViewer.camera);
+      // Resilience Reporting
+      if (mLoad > sLoad) {
+        reports.push(`<span class="positive">Resilience Buffer:</span> Your mitigators are effectively neutralizing ${sLoad} bio-years of environmental load.`);
+      } else if (sLoad > 0) {
+        reports.push(`Environmental load is active. Adding high-intensity exercise could reduce Bio-Age by up to 9 years.`);
+      }
+
+      statusText.innerHTML = reports.length ? reports.join("<br><br>") : "System operating at peak biological efficiency.";
+
+      hV.renderer.render(hV.scene, hV.camera);
+      bV.renderer.render(bV.scene, bV.camera);
     }
-
     animate();
-
-    window.addEventListener("resize", () => {
-      [brainViewer, heartViewer].forEach(v => {
-        const container = v.renderer.domElement.parentElement;
-        v.camera.aspect = container.clientWidth / container.clientHeight;
-        v.camera.updateProjectionMatrix();
-        v.renderer.setSize(container.clientWidth, container.clientHeight);
-      });
-    });
   </script>
 </body>
 </html>

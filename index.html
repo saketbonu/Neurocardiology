@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Brain & Heart – Static Physiological Lab</title>
+  <title>Brain & Heart – Precision Sleep Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -153,7 +153,7 @@
       const container = document.getElementById(id);
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(35, container.clientWidth/container.clientHeight, 0.1, 1000);
-      camera.position.z = 4.0; // Brought camera closer for a larger view
+      camera.position.z = 4.0; 
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
       container.appendChild(renderer.domElement);
@@ -194,7 +194,10 @@
         else if(c.dataset.target === 'both') { hMitigate += parseFloat(c.dataset.val); bMitigate += parseFloat(c.dataset.val); }
       });
 
-      const reqSleep = (age > 65) ? 7 : 8;
+      // DYNAMIC CALCULATION: Stress and Age affect the baseline need
+      let reqSleep = (age > 65) ? 7.0 : 8.0;
+      if (hStress + bStress > 10) reqSleep += 0.5; // Stress increases recovery requirement
+      
       const reqEx = (age > 65) ? 5 : (age > 40) ? 4 : 3;
       const sleepDeficit = Math.max(0, reqSleep - sleep);
       const exDeficit = Math.max(0, reqEx - exercise);
@@ -217,15 +220,20 @@
       if(brain) {
         const brainSize = Math.max(0.65, 1.0 - ((bioAge - age) * 0.008));
         brain.scale.set(brainSize, brainSize, brainSize);
-        // Position and rotation are now fully static
         brain.position.y = 0; 
       }
 
       const statusText = document.getElementById("status-text");
       let reports = [];
+
+      // Sleep reporting with dynamic goal
+      if (sleep < reqSleep) {
+        reports.push(`<span class="warning">Sleep Debt:</span> Your current profile requires <strong>${reqSleep}h</strong> of sleep. You are missing ${sleepDeficit}h, which is halting glymphatic brain clearance.`);
+      } else {
+        reports.push(`<span class="positive">Optimal Rest:</span> You are meeting your <strong>${reqSleep}h</strong> sleep requirement.`);
+      }
+
       if (exercise < reqEx) reports.push(`<span class="warning">Low Cardiac Reserve:</span> Age ${age}y requires ${reqEx} days/wk. Missing ${reqEx - exercise} days.`);
-      if (sleep < reqSleep) reports.push(`<span class="warning">Glymphatic Failure:</span> Insufficient sleep is preventing waste clearance in the brain.`);
-      if (hStress > 10 && exercise < 2) reports.push(`<span class="warning">Cardiac Strain:</span> Elevated resting heart rate detected.`);
       
       statusText.innerHTML = reports.length ? reports.join("<br><br>") : "Optimal biological homeostasis.";
 

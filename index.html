@@ -1,37 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Brains2Heart Simulation</title>
+<meta charset="UTF-8">
+<title>Brains2Heart</title>
+
 <style>
-  body { margin:0; overflow:hidden; background:#111; }
-  #ui {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    background: rgba(255,255,255,0.9);
-    padding: 12px;
-    border-radius: 10px;
-    width: 230px;
-    font-family: Arial, sans-serif;
-    font-size: 13px;
-  }
-  label { display:block; margin-top:8px; }
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #0f1115;
+  font-family: Arial, sans-serif;
+  color: #fff;
+}
+
+/* HEADER */
+#header {
+  height: 60px;
+  background: #141821;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 1px solid #222;
+}
+
+/* MAIN LAYOUT */
+#layout {
+  display: flex;
+  height: calc(100% - 60px);
+}
+
+/* LEFT SIDEBAR */
+#sidebar {
+  width: 260px;
+  background: #141821;
+  border-right: 1px solid #222;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+/* STEP BARS */
+.step {
+  background: #1b2030;
+  border-left: 4px solid #4da3ff;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+}
+
+.step span {
+  display: block;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.step strong {
+  font-size: 14px;
+}
+
+/* CANVAS AREA */
+#viewer {
+  flex: 1;
+  position: relative;
+}
+
+canvas {
+  display: block;
+}
 </style>
 </head>
 
 <body>
 
-<div id="ui">
-  <label>Sleep (hrs): <span id="sleepVal">7</span>
-    <input id="sleep" type="range" min="4" max="10" value="7">
-  </label>
-  <label>Stress: <span id="stressVal">5</span>
-    <input id="stress" type="range" min="0" max="10" value="5">
-  </label>
-  <label>Years: <span id="yearVal">0</span>
-    <input id="years" type="range" min="0" max="20" value="0">
-  </label>
+<div id="header">
+  Brains2Heart — Neurocardiology Simulation
+</div>
+
+<div id="layout">
+  <div id="sidebar">
+    <div class="step">
+      <span>Step 1</span>
+      <strong>Sleep Duration</strong>
+    </div>
+    <div class="step">
+      <span>Step 2</span>
+      <strong>Stress Load</strong>
+    </div>
+    <div class="step">
+      <span>Step 3</span>
+      <strong>Long-term Aging</strong>
+    </div>
+  </div>
+
+  <div id="viewer"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.154/build/three.min.js"></script>
@@ -41,134 +103,86 @@
 <script>
 let scene, camera, renderer, controls;
 let brain, heart;
-let clock = new THREE.Clock();
+const clock = new THREE.Clock();
 
 init();
 animate();
 
 function init() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x111111);
+  scene.background = new THREE.Color(0x0f1115);
 
-  camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+  const w = document.getElementById('viewer').clientWidth;
+  const h = document.getElementById('viewer').clientHeight;
+
+  camera = new THREE.PerspectiveCamera(45, w/h, 0.1, 1000);
   camera.position.set(0, 2, 6);
 
-  renderer = new THREE.WebGLRenderer({ antialias:true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(w, h);
+  document.getElementById('viewer').appendChild(renderer.domElement);
 
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
 
-  // LIGHTS
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
   const dir = new THREE.DirectionalLight(0xffffff, 1);
-  dir.position.set(5,10,5);
+  dir.position.set(5, 10, 5);
   scene.add(dir);
 
   const loader = new THREE.GLTFLoader();
 
-  // LOAD BRAIN
-  loader.load('brain.glb', gltf => {
-    brain = gltf.scene;
+  loader.load('brain.glb', g => {
+    brain = g.scene;
     brain.scale.set(0.01,0.01,0.01);
     brain.position.set(-1.2,0,0);
-
-    brain.traverse(m => {
-      if (m.isMesh) {
-        m.material = new THREE.MeshStandardMaterial({
-          color: 0xff9999,
-          roughness: 0.7,
-          side: THREE.DoubleSide
-        });
-      }
+    brain.traverse(m=>{
+      if(m.isMesh) m.material = new THREE.MeshStandardMaterial({
+        color: 0xff9999,
+        roughness: 0.7
+      });
     });
-
     scene.add(brain);
   });
 
-  // LOAD HEART
-  loader.load('heart.glb', gltf => {
-    heart = gltf.scene;
+  loader.load('heart.glb', g => {
+    heart = g.scene;
     heart.scale.set(0.01,0.01,0.01);
     heart.position.set(1.2,0,0);
-
-    heart.traverse(m => {
-      if (m.isMesh) {
-        m.material = new THREE.MeshStandardMaterial({
-          color: 0xcc0000,
-          roughness: 0.6
-        });
-      }
+    heart.traverse(m=>{
+      if(m.isMesh) m.material = new THREE.MeshStandardMaterial({
+        color: 0xcc0000,
+        roughness: 0.6
+      });
     });
-
     scene.add(heart);
   });
 
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
+  window.addEventListener('resize', onResize);
 }
 
-function animate() {
+function onResize(){
+  const v = document.getElementById('viewer');
+  camera.aspect = v.clientWidth / v.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(v.clientWidth, v.clientHeight);
+}
+
+function animate(){
   requestAnimationFrame(animate);
   controls.update();
 
   const t = clock.getElapsedTime();
 
-  // ROTATION
-  if (brain) brain.rotation.y += 0.003;
-  if (heart) heart.rotation.y -= 0.003;
-
-  // HEART PULSE
-  if (heart) {
-    const pulse = 1 + Math.sin(t * 4) * 0.05;
+  if(brain) brain.rotation.y += 0.002;
+  if(heart){
+    heart.rotation.y -= 0.002;
+    const pulse = 1 + Math.sin(t*4)*0.05;
     heart.scale.set(0.01*pulse,0.01*pulse,0.01*pulse);
   }
 
-  updateHealth();
   renderer.render(scene, camera);
 }
-
-function updateHealth() {
-  const sleep = +sleepSlider.value;
-  const stress = +stressSlider.value;
-  const years = +yearSlider.value;
-
-  sleepVal.textContent = sleep;
-  stressVal.textContent = stress;
-  yearVal.textContent = years;
-
-  let brainHealth = 100 - (7-sleep)*8 - stress*4 - years*1.5;
-  let heartHealth = 100 - stress*5 - years*2;
-
-  brainHealth = Math.max(20, brainHealth);
-  heartHealth = Math.max(20, heartHealth);
-
-  if (brain) {
-    brain.traverse(m => {
-      if (m.isMesh)
-        m.material.color.setHSL(0.02, 1, brainHealth/150);
-    });
-  }
-
-  if (heart) {
-    heart.traverse(m => {
-      if (m.isMesh)
-        m.material.color.setHSL(0, 1, heartHealth/150);
-    });
-  }
-}
-
-// UI
-const sleepSlider = document.getElementById('sleep');
-const stressSlider = document.getElementById('stress');
-const yearSlider = document.getElementById('years');
-const sleepVal = document.getElementById('sleepVal');
-const stressVal = document.getElementById('stressVal');
-const yearVal = document.getElementById('yearVal');
 </script>
 
 </body>

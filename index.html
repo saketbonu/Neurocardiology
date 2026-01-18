@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <title>Brains2Heart – Neurocardiology</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
     body {
       margin: 0;
       display: flex;
       height: 100vh;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
       background: #f2f2f2;
+      overflow: hidden;
     }
 
     #sidebar {
@@ -20,15 +20,12 @@
       padding: 20px;
       box-shadow: 2px 0 10px rgba(0,0,0,0.15);
       box-sizing: border-box;
+      z-index: 10;
     }
 
-    #sidebar h2 {
-      margin-top: 0;
-    }
+    #sidebar h2 { margin-top: 0; color: #333; }
 
-    .control {
-      margin-bottom: 24px;
-    }
+    .control { margin-bottom: 24px; }
 
     .control label {
       display: block;
@@ -38,14 +35,24 @@
 
     .value {
       font-size: 14px;
-      color: #555;
+      color: #007bff;
+      font-weight: bold;
       margin-top: 4px;
     }
 
-    canvas {
-      display: block;
-    }
+    input[type=range] { width: 100%; cursor: pointer; }
+
+    canvas { flex-grow: 1; outline: none; }
   </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.152.2/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -65,73 +72,83 @@
     </div>
 
     <div class="control">
-      <label for="years">Years</label>
-      <input id="years" type="range" min="0" max="30" value="0">
-      <div class="value">Value: <span id="yearsVal">0</span></div>
+      <label for="years">Aging Speed</label>
+      <input id="years" type="range" min="0" max="30" value="5">
+      <div class="value">Value: <span id="yearsVal">5</span></div>
     </div>
   </div>
 
   <script type="module">
-    import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
-    import { OrbitControls } from "https://unpkg.com/three@0.152.2/examples/jsm/controls/OrbitControls.js";
-    import { GLTFLoader } from "https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js";
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+    // 1. Scene Setup
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf0f0f0);
 
-    const camera = new THREE.PerspectiveCamera(
-      60,
-      (window.innerWidth - 300) / window.innerHeight,
-      0.1,
-      100
-    );
-    camera.position.set(0, 1.5, 4);
+    const containerWidth = window.innerWidth - 300;
+    const camera = new THREE.PerspectiveCamera(45, containerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 1, 5);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth - 300, window.innerHeight);
+    renderer.setSize(containerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
     document.body.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-    const dir = new THREE.DirectionalLight(0xffffff, 1);
-    dir.position.set(5, 5, 5);
-    scene.add(dir);
+    // 2. Lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(5, 10, 7.5);
+    scene.add(dirLight);
 
+    // 3. Load Models (Make sure names match exactly in GitHub)
     const loader = new GLTFLoader();
     let brain, heart;
 
-    loader.load("brain.glb", g => {
-      brain = g.scene;
-      brain.position.x = -0.9;
+    loader.load("./brain.glb", (gltf) => {
+      brain = gltf.scene;
+      brain.position.set(-1.2, 0, 0);
       scene.add(brain);
-    });
+    }, undefined, (err) => console.error("Check if brain.glb is in your repo folder:", err));
 
-    loader.load("heart.glb", g => {
-      heart = g.scene;
-      heart.position.x = 0.9;
+    loader.load("./heart.glb", (gltf) => {
+      heart = gltf.scene;
+      heart.position.set(1.2, 0, 0);
       scene.add(heart);
-    });
+    }, undefined, (err) => console.error("Check if heart.glb is in your repo folder:", err));
 
-    const sleep = document.getElementById("sleep");
-    const stress = document.getElementById("stress");
-    const years = document.getElementById("years");
+    // 4. UI Logic
+    const sleepInput = document.getElementById("sleep");
+    const stressInput = document.getElementById("stress");
+    const yearsInput = document.getElementById("years");
 
-    sleep.oninput = () => sleepVal.textContent = sleep.value;
-    stress.oninput = () => stressVal.textContent = stress.value;
-    years.oninput = () => yearsVal.textContent = years.value;
+    const sleepVal = document.getElementById("sleepVal");
+    const stressVal = document.getElementById("stressVal");
+    const yearsVal = document.getElementById("yearsVal");
 
+    // Fix: Update text immediately on move
+    sleepInput.oninput = () => sleepVal.textContent = sleepInput.value;
+    stressInput.oninput = () => stressVal.textContent = stressInput.value;
+    yearsInput.oninput = () => yearsVal.textContent = yearsInput.value;
+
+    // 5. Animation Loop
     function animate() {
       requestAnimationFrame(animate);
 
       if (brain) {
-        brain.rotation.y += years.value * 0.0005;
+        // Use input value as a rotation multiplier
+        brain.rotation.y += parseFloat(yearsInput.value) * 0.002;
       }
 
       if (heart) {
-        const scale = 1 + stress.value / 200;
-        heart.scale.set(scale, scale, scale);
+        // Pulse logic based on stress
+        const pulse = 1 + (Math.sin(Date.now() * 0.005 * (stressInput.value / 20)) * 0.05);
+        const baseScale = 1 + (stressInput.value / 200);
+        heart.scale.set(baseScale * pulse, baseScale * pulse, baseScale * pulse);
       }
 
       controls.update();
@@ -140,12 +157,13 @@
 
     animate();
 
+    // Resize handling
     window.addEventListener("resize", () => {
-      camera.aspect = (window.innerWidth - 300) / window.innerHeight;
+      const newWidth = window.innerWidth - 300;
+      camera.aspect = newWidth / window.innerHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth - 300, window.innerHeight);
+      renderer.setSize(newWidth, window.innerHeight);
     });
   </script>
-
 </body>
 </html>

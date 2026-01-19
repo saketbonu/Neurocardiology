@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Brain & Heart – Precision Red Lab</title>
+  <title>Brain & Heart – Transparent Red Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -10,24 +10,24 @@
       display: flex;
       height: 100vh;
       font-family: 'Segoe UI', system-ui, sans-serif;
-      /* Background is now a neutral dark or can be set to transparent if wrapped in an iframe */
-      background: #1a1a1a; 
-      color: #eee;
+      background: transparent; 
+      color: #333;
       overflow: hidden;
     }
 
     #sidebar {
       width: 400px;
-      background: rgba(40, 40, 40, 0.9);
-      backdrop-filter: blur(20px);
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       padding: 25px;
-      box-shadow: 5px 0 20px rgba(0,0,0,0.3);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       z-index: 10;
       overflow-y: auto;
-      border-right: 1px solid #444;
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     h2 { margin: 0; color: #e74c3c; font-size: 1.5rem; }
@@ -36,7 +36,7 @@
       text-align: center;
       padding: 15px;
       margin: 20px 0;
-      background: #e74c3c; /* Red Box */
+      background: #e74c3c; 
       color: white;
       border-radius: 12px;
     }
@@ -46,7 +46,7 @@
       font-size: 0.75rem;
       font-weight: 800;
       text-transform: uppercase;
-      color: #999;
+      color: #666;
       margin: 15px 0 10px;
       letter-spacing: 1px;
     }
@@ -57,32 +57,30 @@
       display: flex;
       align-items: center;
       font-size: 0.85rem;
-      background: #333;
+      background: rgba(255, 255, 255, 0.6);
       padding: 10px;
       border-radius: 8px;
-      border: 1px solid #444;
+      border: 1px solid rgba(0,0,0,0.1);
       cursor: pointer;
-      color: #ccc;
+      color: #333;
     }
-    
     .activity-item input { margin-right: 12px; accent-color: #e74c3c; }
 
     .control { margin-bottom: 18px; }
-    .control label { display: block; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: #bbb; }
+    .control label { display: block; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: #555; }
     
     .value-display { font-size: 0.9rem; color: #e74c3c; float: right; font-weight: bold; }
-    input[type=range] { width: 100%; accent-color: #e74c3c; cursor: pointer; background: #444; }
+    input[type=range] { width: 100%; accent-color: #e74c3c; cursor: pointer; }
 
     #status-panel {
       padding: 15px;
-      background: #222;
+      background: rgba(255, 255, 255, 0.5);
       border-radius: 12px;
-      border-left: 5px solid #e74c3c;
+      border-left: 5px solid #e74c3c; 
       font-size: 0.82rem;
       line-height: 1.4;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
       min-height: 150px;
-      color: #ddd;
+      color: #333;
     }
 
     #viewer-container { flex-grow: 1; display: flex; gap: 15px; padding: 15px; }
@@ -92,7 +90,6 @@
       background: transparent; 
       border-radius: 24px; 
       position: relative; 
-      border: 1px solid rgba(231, 76, 60, 0.2);
     }
 
     .label-tag { 
@@ -108,9 +105,9 @@
       text-transform: uppercase; 
     }
 
-    .warning { color: #ff6b6b; font-weight: bold; }
-    .positive { color: #2ecc71; font-weight: bold; }
-    strong { color: #e74c3c; }
+    .warning { color: #c0392b; font-weight: bold; }
+    .positive { color: #27ae60; font-weight: bold; }
+    strong { color: #e74c3c; } 
   </style>
 
   <script type="importmap">
@@ -183,13 +180,12 @@
       camera.position.z = 4.0; 
       
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); 
-      renderer.setClearColor(0x000000, 0); 
+      renderer.setClearColor(0x000000, 0);
       renderer.setSize(container.clientWidth, container.clientHeight);
       container.appendChild(renderer.domElement);
       
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
-      
       
       scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 2.5));
       
@@ -255,7 +251,7 @@
       let reports = [];
 
       if (sleep < reqSleep) {
-        reports.push(`<span class="warning">Sleep Debt:</span> Profile requires <strong>${reqSleep}h</strong>. Deficit: ${sleepDeficit}h.`);
+        reports.push(`<span class="warning">Sleep Debt:</span> Profile requires <strong>${reqSleep}h</strong>.`);
       } else {
         reports.push(`<span class="positive">Optimal Rest:</span> Goal of <strong>${reqSleep}h</strong> met.`);
       }

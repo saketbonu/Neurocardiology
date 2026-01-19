@@ -78,14 +78,7 @@
       font-size: 0.75rem;
     }
 
-    @media (max-width: 768px) {
-      #sidebar {
-        width: 100%;
-        left: -100%;
-      }
-    }
-
-    h2 { margin: 0; color: #e74c3c; font-size: 1.5rem; }
+    h2 { margin: 0; color: #e74c3c; font-size: 1.8rem; letter-spacing: -1px; }
     
     .bio-age-box {
       text-align: center;
@@ -132,7 +125,7 @@
       border-left: 5px solid #e74c3c; 
       font-size: 0.85rem;
       line-height: 1.5;
-      min-height: 120px;
+      min-height: 150px;
       color: #333;
       margin-bottom: 30px;
     }
@@ -144,8 +137,6 @@
       width: 100%;
       height: 100%;
       display: flex; 
-      gap: 0; 
-      padding: 0; 
       background: transparent; 
       z-index: 1;
     }
@@ -210,26 +201,26 @@
 
     <div class="section-title">Stressors</div>
     <div class="checklist-group">
-      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="11" data-target="heart"> Social Isolation</label>
-      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="7" data-target="heart"> Processed Diet</label>
-      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="15" data-target="brain"> High Work Pressure</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="14" data-target="heart"> Social Isolation</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="9" data-target="heart"> Processed Diet</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="18" data-target="brain"> High Work Pressure</label>
     </div>
 
     <div class="section-title">Mitigators</div>
     <div class="checklist-group">
-      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="5" data-target="brain"> Daily Meditation</label>
-      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="6" data-target="both"> Deep Social Connection</label>
+      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="6" data-target="brain"> Daily Meditation</label>
+      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="7" data-target="both"> Deep Social Connection</label>
     </div>
 
     <div id="status-panel">
-      <strong>Condition Summary:</strong><br>
-      <div id="status-text">Initial loading...</div>
+      <strong>Medical Observation:</strong><br>
+      <div id="status-text">Initial evaluation...</div>
     </div>
   </div>
 
   <div id="viewer-container">
-    <div id="heart-view" class="viewport"><div class="label-tag">Heart Rate: <span id="bpmDisplay">60</span> BPM</div></div>
-    <div id="brain-view" class="viewport"><div class="label-tag">Brain Resilience</div></div>
+    <div id="heart-view" class="viewport"><div class="label-tag">BPM: <span id="bpmDisplay">60</span></div></div>
+    <div id="brain-view" class="viewport"><div class="label-tag">Cerebral Integrity</div></div>
   </div>
 
   <script type="module">
@@ -269,7 +260,6 @@
       
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
-      controls.enableZoom = true; 
       
       scene.add(new THREE.AmbientLight(0xffffff, 1.8)); 
       const sun = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -288,13 +278,11 @@
         if(isHeart) heart = model; else brain = model;
       });
 
-      const viewer = { scene, camera, renderer, controls, container };
-      viewers.push(viewer);
-      return viewer;
+      viewers.push({ scene, camera, renderer, controls, container });
     }
 
-    const hV = createViewer('heart-view', 'heart.glb', true);
-    const bV = createViewer('brain-view', 'brain.glb', false);
+    createViewer('heart-view', 'heart.glb', true);
+    createViewer('brain-view', 'brain.glb', false);
 
     window.addEventListener('resize', () => {
       viewers.forEach(v => {
@@ -321,13 +309,12 @@
         else if(c.dataset.target === 'both') { hMitigate += parseFloat(c.dataset.val); bMitigate += parseFloat(c.dataset.val); }
       });
 
-      let reqSleep = (age > 65) ? 7.0 : 8.0;
-      if (hStress + bStress > 10) reqSleep += 0.5; 
-      const reqEx = (age > 65) ? 5 : (age > 40) ? 4 : 3;
-
+      const reqSleep = (age > 65) ? 7.0 : 8.0;
       const sleepDeficit = Math.max(0, reqSleep - sleep);
+      const reqEx = (age > 65) ? 5 : (age > 40) ? 4 : 3;
       const exDeficit = Math.max(0, reqEx - exercise);
-      const ageDelta = (sleepDeficit * 2.5) + (exDeficit * 2) + (hStress + bStress) - (hMitigate + bMitigate);
+
+      const ageDelta = (sleepDeficit * 2.8) + (exDeficit * 2.2) + (hStress + bStress) - (hMitigate + bMitigate);
       const bioAge = Math.round(age + ageDelta);
       
       document.getElementById("bioAgeDisp").textContent = bioAge;
@@ -335,23 +322,27 @@
       document.getElementById("sleepVal").textContent = sleep;
       document.getElementById("exVal").textContent = exercise;
 
+      let currentBPM = 60;
       if(heart) {
-        const heartBaseScale = 1.1;
-        const bpmValue = 60 + (hStress * 1.5) + (sleepDeficit * 5) - (exercise * 3);
-        const freq = bpmValue / 60;
-        document.getElementById("bpmDisplay").textContent = Math.round(bpmValue);
+        const baseRHR = 60 + (age * 0.15); 
+        const exBonus = exercise * 3.0; 
+        const sleepPenalty = sleepDeficit * 4.5;
+        currentBPM = Math.max(48, baseRHR - exBonus + sleepPenalty + hStress + bStress - hMitigate);
+        
+        const freq = currentBPM / 60;
+        document.getElementById("bpmDisplay").textContent = Math.round(currentBPM);
         const pulse = 1 + (Math.pow(Math.sin(time * freq * Math.PI), 4) * 0.08);
-        heart.scale.set(heartBaseScale * pulse, heartBaseScale * pulse, heartBaseScale * pulse);
+        heart.scale.set(1.1 * pulse, 1.1 * pulse, 1.1 * pulse);
       }
 
+      const healthRatio = Math.max(0, 1 - (ageDelta / 42));
       if(brain) {
-        const healthRatio = Math.max(0, 1 - (ageDelta / 40));
-        const brainShrink = 1.1 * (0.85 + (healthRatio * 0.15));
+        const brainShrink = 1.1 * (0.82 + (healthRatio * 0.18));
         brain.scale.set(brainShrink, brainShrink, brainShrink);
 
         brain.traverse(n => {
           if(n.isMesh && n.material && n.userData.origColor) {
-            const desat = 0.6;
+            const desat = 0.55;
             n.material.color.r = THREE.MathUtils.lerp(desat, n.userData.origColor.r, healthRatio);
             n.material.color.g = THREE.MathUtils.lerp(desat, n.userData.origColor.g, healthRatio);
             n.material.color.b = THREE.MathUtils.lerp(desat, n.userData.origColor.b, healthRatio);
@@ -360,15 +351,20 @@
       }
 
       const statusText = document.getElementById("status-text");
-      let reports = [];
-      if (ageDelta > 15) {
-        reports.push(`<span class="warning">Structural Decay:</span> Prolonged stress has induced measurable cortical thinning. Heart rate elevation suggests chronic sympathetic nervous system activation.`);
-      } else if (sleep < reqSleep) {
-        reports.push(`<span class="warning">Glymphatic Stasis:</span> Sleep deprivation is inhibiting neural waste clearance while increasing resting heart rate.`);
+      let msg = "";
+
+      if (sleepDeficit > 2) {
+        msg = `<span class="warning">Glymphatic Failure:</span> Chronic sleep debt is preventing metabolic waste clearance, increasing the risk of early-onset neurodegeneration.`;
+      } else if (ageDelta > 15) {
+        msg = `<span class="warning">PFC Atrophy:</span> Sustained cortisol levels are causing physical thinning of the prefrontal cortex, impairing emotional regulation.`;
+      } else if (currentBPM > 90) {
+        msg = `<span class="warning">Sympathetic Overload:</span> Your heart is in a chronic "fight or flight" state. This elevates arterial pressure and risks left ventricular hypertrophy.`;
+      } else if (exercise >= reqEx && sleep >= reqSleep && (hStress + bStress) < 10) {
+        msg = `<span class="positive">Optimal Plasticity:</span> Low RHR and robust brain volume suggest high neural plasticity and cardiovascular reserve.`;
       } else {
-        reports.push(`<span class="positive">Optimal Homeostasis:</span> Heart rate variability is healthy and neural circuits show strong integrity.`);
+        msg = `<span class="positive">Standard Homeostasis:</span> Organs are performing within expected demographic baselines.`;
       }
-      statusText.innerHTML = reports.join("<br><br>");
+      statusText.innerHTML = msg;
 
       viewers.forEach(v => {
         v.controls.update();
@@ -379,4 +375,3 @@
   </script>
 </body>
 </html>
-

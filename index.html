@@ -336,12 +336,12 @@
       document.getElementById("exVal").textContent = exercise;
 
       if(heart) {
-        const heartSize = 1.1 + (Math.max(0, ageDelta) * 0.005);
+        const heartBaseScale = 1.1;
         const bpmValue = 60 + (hStress * 1.5) + (sleepDeficit * 5) - (exercise * 3);
         const freq = bpmValue / 60;
         document.getElementById("bpmDisplay").textContent = Math.round(bpmValue);
         const pulse = 1 + (Math.pow(Math.sin(time * freq * Math.PI), 4) * 0.08);
-        heart.scale.set(heartSize * pulse, heartSize * pulse, heartSize * pulse);
+        heart.scale.set(heartBaseScale * pulse, heartBaseScale * pulse, heartBaseScale * pulse);
       }
 
       if(brain) {
@@ -362,11 +362,11 @@
       const statusText = document.getElementById("status-text");
       let reports = [];
       if (ageDelta > 15) {
-        reports.push(`<span class="warning">Structural Decay:</span> Prolonged stress has induced measurable cortical thinning. The physical volume of memory-related regions has decreased, signifying premature biological aging.`);
+        reports.push(`<span class="warning">Structural Decay:</span> Prolonged stress has induced measurable cortical thinning. Heart rate elevation suggests chronic sympathetic nervous system activation.`);
       } else if (sleep < reqSleep) {
-        reports.push(`<span class="warning">Glymphatic Stasis:</span> Sleep deprivation is inhibiting the brain's ability to purge metabolic waste, impacting neural connectivity.`);
+        reports.push(`<span class="warning">Glymphatic Stasis:</span> Sleep deprivation is inhibiting neural waste clearance while increasing resting heart rate.`);
       } else {
-        reports.push(`<span class="positive">Optimal Homeostasis:</span> Neural circuits show high connectivity and robust structural integrity.`);
+        reports.push(`<span class="positive">Optimal Homeostasis:</span> Heart rate variability is healthy and neural circuits show strong integrity.`);
       }
       statusText.innerHTML = reports.join("<br><br>");
 

@@ -7,8 +7,6 @@
   <style>
     body {
       margin: 0;
-      display: flex;
-      flex-direction: row;
       height: 100vh;
       font-family: 'Segoe UI', system-ui, sans-serif;
       background: transparent; 
@@ -16,33 +14,61 @@
       overflow: hidden;
     }
 
+    #menu-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 100;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
     #sidebar {
+      position: fixed;
+      left: -420px;
+      top: 0;
       width: 400px;
-      background: rgba(255, 255, 255, 0.2);
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       padding: 25px;
-      box-shadow: 2px 0 15px rgba(0,0,0,0.05);
+      box-shadow: 5px 0 25px rgba(0,0,0,0.1);
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      z-index: 10;
+      z-index: 200;
       overflow-y: auto;
-      border-right: 1px solid rgba(255, 255, 255, 0.3);
+      transition: left 0.4s cubic-bezier(0.075, 0.82, 0.165, 1);
+    }
+
+    #sidebar.open {
+      left: 0;
+    }
+
+    #close-menu {
+      align-self: flex-end;
+      background: none;
+      border: none;
+      color: #e74c3c;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
     }
 
     @media (max-width: 768px) {
-      body { flex-direction: column; }
       #sidebar {
         width: 100%;
-        height: 55%; 
-        order: 2;
-        border-right: none;
-        border-top: 1px solid rgba(0,0,0,0.1);
-      }
-      #viewer-container {
-        height: 45%; 
-        order: 1;
+        left: -100%;
       }
     }
 
@@ -98,13 +124,24 @@
       margin-bottom: 30px;
     }
 
-    #viewer-container { flex-grow: 1; display: flex; gap: 10px; padding: 10px; background: transparent; }
+    #viewer-container { 
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex; 
+      gap: 0; 
+      padding: 0; 
+      background: transparent; 
+      z-index: 1;
+    }
     .viewport { flex: 1; background: transparent; position: relative; min-width: 0; }
 
     .label-tag { 
       position: absolute; 
-      top: 15px; 
-      left: 15px; 
+      top: 80px; 
+      left: 20px; 
       background: rgba(231, 76, 60, 0.9); 
       color: white; 
       padding: 6px 12px; 
@@ -130,7 +167,10 @@
 </head>
 <body>
 
+  <button id="menu-toggle">Open Lab Settings</button>
+
   <div id="sidebar">
+    <button id="close-menu">✕ CLOSE</button>
     <h2>Organ Resilience Lab</h2>
     <div class="bio-age-box">
       <small>ESTIMATED BIOLOGICAL AGE</small>
@@ -155,6 +195,7 @@
     <div class="section-title">Stressors</div>
     <div class="checklist-group">
       <label class="activity-item"><input type="checkbox" class="stress-check" data-val="11" data-target="heart"> Social Isolation</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="7" data-target="heart"> Processed Diet</label>
       <label class="activity-item"><input type="checkbox" class="stress-check" data-val="8" data-target="brain"> High Work Pressure</label>
     </div>
 
@@ -179,6 +220,13 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    const sidebar = document.getElementById('sidebar');
+    const openBtn = document.getElementById('menu-toggle');
+    const closeBtn = document.getElementById('close-menu');
+
+    openBtn.addEventListener('click', () => sidebar.classList.add('open'));
+    closeBtn.addEventListener('click', () => sidebar.classList.remove('open'));
 
     let brain, heart;
     const viewers = [];
@@ -272,7 +320,6 @@
       if(brain) {
         brain.scale.set(1.1, 1.1, 1.1);
         const healthRatio = Math.max(0, 1 - (ageDelta / 30)); 
-        
         brain.traverse(n => {
           if(n.isMesh && n.material && n.userData.origColor) {
             const grayValue = 0.5;
@@ -285,17 +332,14 @@
 
       const statusText = document.getElementById("status-text");
       let reports = [];
-      
       if (sleep < reqSleep) {
-        reports.push(`<span class="warning">Sleep Debt:</span> Your profile requires <strong>${reqSleep}h</strong> of sleep. You are missing ${sleepDeficit}h, which is halting glymphatic brain clearance and metabolic recovery.`);
+        reports.push(`<span class="warning">Sleep Debt:</span> Your profile requires <strong>${reqSleep}h</strong> of sleep. You are missing ${sleepDeficit}h, which is halting glymphatic brain clearance.`);
       } else {
-        reports.push(`<span class="positive">Optimal Rest:</span> You are meeting your <strong>${reqSleep}h</strong> sleep requirement, allowing for full REM cycles and neural waste removal.`);
+        reports.push(`<span class="positive">Optimal Rest:</span> You are meeting your <strong>${reqSleep}h</strong> sleep requirement.`);
       }
-
       if (exercise < reqEx) {
-        reports.push(`<span class="warning">Low Cardiac Reserve:</span> At age ${age}y, the heart requires ${reqEx} days/wk of activity. You are missing ${reqEx - exercise} days, leading to decreased stroke volume.`);
+        reports.push(`<span class="warning">Low Cardiac Reserve:</span> At age ${age}y, the heart requires ${reqEx} days/wk.`);
       }
-
       statusText.innerHTML = reports.join("<br><br>");
 
       viewers.forEach(v => {

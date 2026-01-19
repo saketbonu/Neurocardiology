@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Brain & Heart – Transparent Red Lab</title>
+  <title>Brain & Heart – Precision Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -85,12 +85,7 @@
 
     #viewer-container { flex-grow: 1; display: flex; gap: 15px; padding: 15px; }
     
-    .viewport { 
-      flex: 1; 
-      background: transparent; 
-      border-radius: 24px; 
-      position: relative; 
-    }
+    .viewport { flex: 1; background: transparent; position: relative; }
 
     .label-tag { 
       position: absolute; 
@@ -180,28 +175,32 @@
       camera.position.z = 4.0; 
       
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); 
-      renderer.setClearColor(0x000000, 0);
+      renderer.setClearColor(0x000000, 0); 
       renderer.setSize(container.clientWidth, container.clientHeight);
       container.appendChild(renderer.domElement);
       
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 2.5));
+      scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+      const sun = new THREE.DirectionalLight(0xffffff, 2);
+      sun.position.set(5, 5, 5);
+      scene.add(sun);
       
       new GLTFLoader().load(path, (gltf) => {
         const model = gltf.scene;
         scene.add(model);
-        if(isHeart) heart = model; else brain = model;
-        model.traverse(n => { if(n.isMesh) n.material = new THREE.MeshStandardMaterial({ 
-          color: isHeart ? 0xd63031 : 0xffdbdb, roughness: 0.3, metalness: 0.05 
-        }); });
+        if(isHeart) {
+          heart = model;
+          model.traverse(n => { if(n.isMesh) n.material = new THREE.MeshStandardMaterial({ color: 0xd63031, roughness: 0.3 }); });
+        } else {
+          brain = model;
+        }
       });
       return { scene, camera, renderer, controls };
     }
-
-    const hV = createViewer('heart-view', './heart.glb', true);
-    const bV = createViewer('brain-view', './brain.glb', false);
+    const hV = createViewer('heart-view', 'heart.glb', true);
+    const bV = createViewer('brain-view', 'brain.glb', false);
 
     function animate() {
       requestAnimationFrame(animate);
@@ -226,7 +225,8 @@
       const reqEx = (age > 65) ? 5 : (age > 40) ? 4 : 3;
       const sleepDeficit = Math.max(0, reqSleep - sleep);
       const exDeficit = Math.max(0, reqEx - exercise);
-      const bioAge = Math.round(age + (sleepDeficit * 2.5) + (exDeficit * 2) + (hStress + bStress) - (hMitigate + bMitigate));
+      const ageDelta = (sleepDeficit * 2.5) + (exDeficit * 2) + (hStress + bStress) - (hMitigate + bMitigate);
+      const bioAge = Math.round(age + ageDelta);
       
       document.getElementById("bioAgeDisp").textContent = bioAge;
       document.getElementById("ageVal").textContent = age;
@@ -234,7 +234,7 @@
       document.getElementById("exVal").textContent = exercise;
 
       if(heart) {
-        const heartSize = 1.0 + ((bioAge - age) * 0.006);
+        const heartSize = 1.0 + (ageDelta * 0.006);
         const bpmValue = 60 + (hStress * 1.5) + (sleepDeficit * 5) - (exercise * 3);
         const freq = bpmValue / 60;
         document.getElementById("bpmDisplay").textContent = Math.round(bpmValue);
@@ -243,19 +243,18 @@
       }
 
       if(brain) {
-        const brainSize = Math.max(0.65, 1.0 - ((bioAge - age) * 0.008));
-        brain.scale.set(brainSize, brainSize, brainSize);
+        const saturation = Math.max(0.1, 1.0 - (ageDelta * 0.02)); 
+        brain.traverse(n => {
+          if(n.isMesh && n.material) {
+            n.material.color.setHSL(0, 0, saturation + 0.5);
+          }
+        });
       }
 
       const statusText = document.getElementById("status-text");
       let reports = [];
-
-      if (sleep < reqSleep) {
-        reports.push(`<span class="warning">Sleep Debt:</span> Profile requires <strong>${reqSleep}h</strong>.`);
-      } else {
-        reports.push(`<span class="positive">Optimal Rest:</span> Goal of <strong>${reqSleep}h</strong> met.`);
-      }
-
+      if (sleep < reqSleep) reports.push(`<span class="warning">Sleep Debt:</span> Profile requires <strong>${reqSleep}h</strong>. Deficit: ${sleepDeficit}h.`);
+      else reports.push(`<span class="positive">Optimal Rest:</span> Goal of <strong>${reqSleep}h</strong> met.`);
       if (exercise < reqEx) reports.push(`<span class="warning">Low Cardiac Reserve:</span> Age ${age}y requires ${reqEx} days/wk.`);
       
       statusText.innerHTML = reports.length ? reports.join("<br><br>") : "Optimal biological homeostasis.";

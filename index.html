@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Brain & Heart – Original Design Lab</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organ Resilience Lab - Mobile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     body {
       margin: 0;
       display: flex;
+      flex-direction: row;
       height: 100vh;
       font-family: 'Segoe UI', system-ui, sans-serif;
       background: transparent; 
@@ -16,92 +17,97 @@
     }
 
     #sidebar {
-      width: 400px;
-      background: rgba(255, 255, 255, 0.15);
+      width: 380px;
+      background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(15px);
       -webkit-backdrop-filter: blur(15px);
-      padding: 25px;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+      padding: 20px;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       z-index: 10;
       overflow-y: auto;
-      border-right: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    h2 { margin: 0; color: #e74c3c; font-size: 1.5rem; }
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      #sidebar {
+        width: 100%;
+        height: 50%;
+        order: 2;
+        border-right: none;
+        border-top: 1px solid rgba(0,0,0,0.1);
+        border-radius: 20px 20px 0 0;
+      }
+      #viewer-container {
+        height: 50%;
+        order: 1;
+      }
+    }
+
+    h2 { margin: 0; color: #e74c3c; font-size: 1.3rem; }
     
     .bio-age-box {
       text-align: center;
-      padding: 15px;
-      margin: 20px 0;
+      padding: 10px;
+      margin: 15px 0;
       background: #e74c3c; 
       color: white;
       border-radius: 12px;
     }
-    .bio-age-box big { font-size: 2.2rem; font-weight: bold; display: block; }
+    .bio-age-box big { font-size: 1.8rem; font-weight: bold; display: block; }
 
     .section-title {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 800;
       text-transform: uppercase;
       color: #666;
-      margin: 15px 0 10px;
-      letter-spacing: 1px;
+      margin: 10px 0 5px;
     }
 
-    .checklist-group { display: grid; gap: 8px; margin-bottom: 10px; }
+    .checklist-group { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 10px; }
+    @media (max-width: 400px) { .checklist-group { grid-template-columns: 1fr; } }
 
     .activity-item {
       display: flex;
       align-items: center;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       background: rgba(255, 255, 255, 0.6);
-      padding: 10px;
+      padding: 8px;
       border-radius: 8px;
       border: 1px solid rgba(0,0,0,0.1);
-      cursor: pointer;
-      color: #333;
     }
-    .activity-item input { margin-right: 12px; accent-color: #e74c3c; }
+    .activity-item input { margin-right: 10px; accent-color: #e74c3c; }
 
-    .control { margin-bottom: 18px; }
-    .control label { display: block; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: #555; }
-    
-    .value-display { font-size: 0.9rem; color: #e74c3c; float: right; font-weight: bold; }
-    input[type=range] { width: 100%; accent-color: #e74c3c; cursor: pointer; }
+    .control { margin-bottom: 12px; }
+    .control label { display: block; font-weight: 700; font-size: 0.65rem; text-transform: uppercase; color: #555; }
+    .value-display { font-size: 0.85rem; color: #e74c3c; float: right; font-weight: bold; }
+    input[type=range] { width: 100%; accent-color: #e74c3c; }
 
     #status-panel {
-      padding: 15px;
+      padding: 12px;
       background: rgba(255, 255, 255, 0.5);
-      border-radius: 12px;
-      border-left: 5px solid #e74c3c; 
-      font-size: 0.82rem;
-      line-height: 1.4;
-      min-height: 150px;
-      color: #333;
+      border-radius: 10px;
+      border-left: 4px solid #e74c3c; 
+      font-size: 0.75rem;
+      margin-bottom: 20px;
     }
 
-    #viewer-container { flex-grow: 1; display: flex; gap: 15px; padding: 15px; }
-    .viewport { flex: 1; background: transparent; position: relative; }
+    #viewer-container { flex-grow: 1; display: flex; gap: 5px; padding: 5px; background: transparent; }
+    .viewport { flex: 1; background: transparent; position: relative; min-width: 0; }
 
     .label-tag { 
       position: absolute; 
-      top: 20px; 
-      left: 20px; 
+      top: 10px; 
+      left: 10px; 
       background: rgba(231, 76, 60, 0.9); 
       color: white; 
-      padding: 8px 16px; 
-      border-radius: 30px; 
-      font-size: 0.8rem; 
+      padding: 4px 10px; 
+      border-radius: 20px; 
+      font-size: 0.6rem; 
       font-weight: bold; 
-      text-transform: uppercase; 
     }
-
-    .warning { color: #c0392b; font-weight: bold; }
-    .positive { color: #27ae60; font-weight: bold; }
-    strong { color: #e74c3c; } 
   </style>
 
   <script type="importmap">
@@ -116,14 +122,14 @@
 <body>
 
   <div id="sidebar">
-    <h2>Organ Resilience Lab</h2>
+    <h2>Resilience Lab</h2>
     <div class="bio-age-box">
-      <small>ESTIMATED BIOLOGICAL AGE</small>
+      <small>BIOLOGICAL AGE</small>
       <big id="bioAgeDisp">25</big>
     </div>
 
     <div class="control">
-      <label>Chronological Age <span class="value-display"><span id="ageVal">25</span>y</span></label>
+      <label>Age <span class="value-display"><span id="ageVal">25</span>y</span></label>
       <input id="age" type="range" min="20" max="90" value="25">
     </div>
 
@@ -133,32 +139,26 @@
     </div>
 
     <div class="control">
-      <label>Exercise Frequency <span class="value-display"><span id="exVal">3</span>d/wk</span></label>
+      <label>Exercise <span class="value-display"><span id="exVal">3</span>d/wk</span></label>
       <input id="exercise" type="range" min="0" max="7" value="3">
     </div>
 
-    <div class="section-title">Stressors</div>
+    <div class="section-title">Lifestyle Factors</div>
     <div class="checklist-group">
-      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="11" data-target="heart"> Social Isolation</label>
-      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="7" data-target="heart"> Processed Diet</label>
-      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="8" data-target="brain"> High Work Pressure</label>
-    </div>
-
-    <div class="section-title">Mitigators</div>
-    <div class="checklist-group">
-      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="5" data-target="brain"> Daily Meditation</label>
-      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="6" data-target="both"> Deep Social Connection</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="11" data-target="heart"> Isolation</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="8" data-target="brain"> Work Pressure</label>
+      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="5" data-target="brain"> Meditation</label>
     </div>
 
     <div id="status-panel">
-      <strong>Condition Summary:</strong><br>
-      <div id="status-text">Synchronizing clinical data...</div>
+      <strong>Analysis:</strong><br>
+      <div id="status-text">Ready.</div>
     </div>
   </div>
 
   <div id="viewer-container">
-    <div id="heart-view" class="viewport"><div class="label-tag">Heart Rate: <span id="bpmDisplay">60</span> BPM</div></div>
-    <div id="brain-view" class="viewport"><div class="label-tag">Brain Health</div></div>
+    <div id="heart-view" class="viewport"><div class="label-tag">HEART</div></div>
+    <div id="brain-view" class="viewport"><div class="label-tag">BRAIN</div></div>
   </div>
 
   <script type="module">
@@ -167,19 +167,22 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
     let brain, heart;
+    const viewers = [];
+
     function createViewer(id, path, isHeart) {
       const container = document.getElementById(id);
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(35, container.clientWidth/container.clientHeight, 0.1, 1000);
-      camera.position.z = 3.2; 
+      camera.position.z = 3.5; 
       
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); 
-      renderer.setClearColor(0x000000, 0); 
+      renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(container.clientWidth, container.clientHeight);
       container.appendChild(renderer.domElement);
       
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
+      controls.enableZoom = false;
       
       scene.add(new THREE.AmbientLight(0xffffff, 1.8)); 
       const sun = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -189,22 +192,27 @@
       new GLTFLoader().load(path, (gltf) => {
         const model = gltf.scene;
         scene.add(model);
-        
-        // This logic captures and stores the ORIGINAL DESIGN for both heart and brain
         model.traverse(n => {
-           if(n.isMesh && n.material) {
-              n.userData.origColor = n.material.color.clone();
-           }
+           if(n.isMesh && n.material) n.userData.origColor = n.material.color.clone();
         });
-
-        if(isHeart) heart = model;
-        else brain = model;
+        if(isHeart) heart = model; else brain = model;
       });
-      return { scene, camera, renderer, controls };
+
+      const viewer = { scene, camera, renderer, controls, container };
+      viewers.push(viewer);
+      return viewer;
     }
 
     const hV = createViewer('heart-view', 'heart.glb', true);
     const bV = createViewer('brain-view', 'brain.glb', false);
+
+    window.addEventListener('resize', () => {
+      viewers.forEach(v => {
+        v.camera.aspect = v.container.clientWidth / v.container.clientHeight;
+        v.camera.updateProjectionMatrix();
+        v.renderer.setSize(v.container.clientWidth, v.container.clientHeight);
+      });
+    });
 
     function animate() {
       requestAnimationFrame(animate);
@@ -220,16 +228,10 @@
       });
       document.querySelectorAll('.reduce-check:checked').forEach(c => {
         if(c.dataset.target === 'brain') bMitigate += parseFloat(c.dataset.val);
-        else if(c.dataset.target === 'both') { hMitigate += parseFloat(c.dataset.val); bMitigate += parseFloat(c.dataset.val); }
       });
 
       let reqSleep = (age > 65) ? 7.0 : 8.0;
-      if (hStress + bStress > 10) reqSleep += 0.5; 
-      
-      const reqEx = (age > 65) ? 5 : (age > 40) ? 4 : 3;
-      const sleepDeficit = Math.max(0, reqSleep - sleep);
-      const exDeficit = Math.max(0, reqEx - exercise);
-      const ageDelta = (sleepDeficit * 2.5) + (exDeficit * 2) + (hStress + bStress) - (hMitigate + bMitigate);
+      const ageDelta = (Math.max(0, reqSleep - sleep) * 2.5) + (hStress + bStress) - bMitigate;
       const bioAge = Math.round(age + ageDelta);
       
       document.getElementById("bioAgeDisp").textContent = bioAge;
@@ -238,39 +240,28 @@
       document.getElementById("exVal").textContent = exercise;
 
       if(heart) {
-        const heartSize = 1.1 + (ageDelta * 0.006);
-        const bpmValue = 60 + (hStress * 1.5) + (sleepDeficit * 5) - (exercise * 3);
-        const freq = bpmValue / 60;
-        document.getElementById("bpmDisplay").textContent = Math.round(bpmValue);
-        const pulse = 1 + (Math.pow(Math.sin(time * freq * Math.PI), 4) * 0.08);
-        heart.scale.set(heartSize * pulse, heartSize * pulse, heartSize * pulse);
+        const pulse = 1 + (Math.pow(Math.sin(time * 1.2 * Math.PI), 4) * 0.08);
+        heart.scale.set(1.1 * pulse, 1.1 * pulse, 1.1 * pulse);
       }
 
       if(brain) {
-        brain.scale.set(1.1, 1.1, 1.1);
         const healthRatio = Math.max(0, 1 - (ageDelta / 30)); 
-        
         brain.traverse(n => {
           if(n.isMesh && n.material && n.userData.origColor) {
-            const grayValue = 0.5;
-            n.material.color.r = THREE.MathUtils.lerp(grayValue, n.userData.origColor.r, healthRatio);
-            n.material.color.g = THREE.MathUtils.lerp(grayValue, n.userData.origColor.g, healthRatio);
-            n.material.color.b = THREE.MathUtils.lerp(grayValue, n.userData.origColor.b, healthRatio);
+            n.material.color.r = THREE.MathUtils.lerp(0.5, n.userData.origColor.r, healthRatio);
+            n.material.color.g = THREE.MathUtils.lerp(0.5, n.userData.origColor.g, healthRatio);
+            n.material.color.b = THREE.MathUtils.lerp(0.5, n.userData.origColor.b, healthRatio);
           }
         });
       }
 
       const statusText = document.getElementById("status-text");
-      let reports = [];
-      if (sleep < reqSleep) reports.push(`<span class="warning">Sleep Debt:</span> Profile requires <strong>${reqSleep}h</strong>.`);
-      if (exercise < reqEx) reports.push(`<span class="warning">Low Cardiac Reserve:</span> Age ${age}y requires ${reqEx} days/wk.`);
-      
-      statusText.innerHTML = reports.length ? reports.join("<br><br>") : "Optimal biological homeostasis.";
+      statusText.innerHTML = sleep < reqSleep ? `Requires <strong>${reqSleep}h</strong> sleep.` : "Homeostasis optimal.";
 
-      hV.controls.update();
-      hV.renderer.render(hV.scene, hV.camera);
-      bV.controls.update();
-      bV.renderer.render(bV.scene, bV.camera);
+      viewers.forEach(v => {
+        v.controls.update();
+        v.renderer.render(v.scene, v.camera);
+      });
     }
     animate();
   </script>

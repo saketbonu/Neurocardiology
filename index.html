@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Brain & Heart – Precision Sleep Lab</title>
+  <title>Brain & Heart – Precision Red Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -10,30 +10,33 @@
       display: flex;
       height: 100vh;
       font-family: 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      color: #333;
+      /* Background is now a neutral dark or can be set to transparent if wrapped in an iframe */
+      background: #1a1a1a; 
+      color: #eee;
       overflow: hidden;
     }
 
     #sidebar {
       width: 400px;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(40, 40, 40, 0.9);
       backdrop-filter: blur(20px);
       padding: 25px;
-      box-shadow: 5px 0 20px rgba(0,0,0,0.1);
+      box-shadow: 5px 0 20px rgba(0,0,0,0.3);
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       z-index: 10;
       overflow-y: auto;
+      border-right: 1px solid #444;
     }
 
-    h2 { margin: 0; color: #2c3e50; font-size: 1.5rem; }
+    h2 { margin: 0; color: #e74c3c; font-size: 1.5rem; }
+    
     .bio-age-box {
       text-align: center;
       padding: 15px;
       margin: 20px 0;
-      background: #2c3e50;
+      background: #e74c3c; /* Red Box */
       color: white;
       border-radius: 12px;
     }
@@ -43,7 +46,7 @@
       font-size: 0.75rem;
       font-weight: 800;
       text-transform: uppercase;
-      color: #7f8c8d;
+      color: #999;
       margin: 15px 0 10px;
       letter-spacing: 1px;
     }
@@ -54,36 +57,60 @@
       display: flex;
       align-items: center;
       font-size: 0.85rem;
-      background: white;
+      background: #333;
       padding: 10px;
       border-radius: 8px;
-      border: 1px solid #ddd;
+      border: 1px solid #444;
       cursor: pointer;
+      color: #ccc;
     }
-    .activity-item input { margin-right: 12px; }
+    
+    .activity-item input { margin-right: 12px; accent-color: #e74c3c; }
 
     .control { margin-bottom: 18px; }
-    .control label { display: block; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: #444; }
-    .value-display { font-size: 0.9rem; color: #2980b9; float: right; font-weight: bold; }
-    input[type=range] { width: 100%; accent-color: #2980b9; cursor: pointer; }
+    .control label { display: block; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: #bbb; }
+    
+    .value-display { font-size: 0.9rem; color: #e74c3c; float: right; font-weight: bold; }
+    input[type=range] { width: 100%; accent-color: #e74c3c; cursor: pointer; background: #444; }
 
     #status-panel {
       padding: 15px;
-      background: #fff;
+      background: #222;
       border-radius: 12px;
-      border-left: 5px solid #2980b9;
+      border-left: 5px solid #e74c3c;
       font-size: 0.82rem;
       line-height: 1.4;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
       min-height: 150px;
+      color: #ddd;
     }
 
     #viewer-container { flex-grow: 1; display: flex; gap: 15px; padding: 15px; }
-    .viewport { flex: 1; background: radial-gradient(circle, #ffffff 0%, #e0e0e0 100%); border-radius: 24px; position: relative; }
-    .label-tag { position: absolute; top: 20px; left: 20px; background: rgba(44, 62, 80, 0.9); color: white; padding: 8px 16px; border-radius: 30px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+    
+    .viewport { 
+      flex: 1; 
+      background: transparent; 
+      border-radius: 24px; 
+      position: relative; 
+      border: 1px solid rgba(231, 76, 60, 0.2);
+    }
 
-    .warning { color: #e74c3c; font-weight: bold; }
-    .positive { color: #27ae60; font-weight: bold; }
+    .label-tag { 
+      position: absolute; 
+      top: 20px; 
+      left: 20px; 
+      background: rgba(231, 76, 60, 0.9); 
+      color: white; 
+      padding: 8px 16px; 
+      border-radius: 30px; 
+      font-size: 0.8rem; 
+      font-weight: bold; 
+      text-transform: uppercase; 
+    }
+
+    .warning { color: #ff6b6b; font-weight: bold; }
+    .positive { color: #2ecc71; font-weight: bold; }
+    strong { color: #e74c3c; }
   </style>
 
   <script type="importmap">
@@ -154,14 +181,17 @@
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(35, container.clientWidth/container.clientHeight, 0.1, 1000);
       camera.position.z = 4.0; 
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); 
+      renderer.setClearColor(0x000000, 0); 
       renderer.setSize(container.clientWidth, container.clientHeight);
       container.appendChild(renderer.domElement);
       
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 2.0));
+      
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 2.5));
       
       new GLTFLoader().load(path, (gltf) => {
         const model = gltf.scene;
@@ -194,9 +224,8 @@
         else if(c.dataset.target === 'both') { hMitigate += parseFloat(c.dataset.val); bMitigate += parseFloat(c.dataset.val); }
       });
 
-      // DYNAMIC CALCULATION: Stress and Age affect the baseline need
       let reqSleep = (age > 65) ? 7.0 : 8.0;
-      if (hStress + bStress > 10) reqSleep += 0.5; // Stress increases recovery requirement
+      if (hStress + bStress > 10) reqSleep += 0.5; 
       
       const reqEx = (age > 65) ? 5 : (age > 40) ? 4 : 3;
       const sleepDeficit = Math.max(0, reqSleep - sleep);
@@ -220,20 +249,18 @@
       if(brain) {
         const brainSize = Math.max(0.65, 1.0 - ((bioAge - age) * 0.008));
         brain.scale.set(brainSize, brainSize, brainSize);
-        brain.position.y = 0; 
       }
 
       const statusText = document.getElementById("status-text");
       let reports = [];
 
-      // Sleep reporting with dynamic goal
       if (sleep < reqSleep) {
-        reports.push(`<span class="warning">Sleep Debt:</span> Your current profile requires <strong>${reqSleep}h</strong> of sleep. You are missing ${sleepDeficit}h, which is halting glymphatic brain clearance.`);
+        reports.push(`<span class="warning">Sleep Debt:</span> Profile requires <strong>${reqSleep}h</strong>. Deficit: ${sleepDeficit}h.`);
       } else {
-        reports.push(`<span class="positive">Optimal Rest:</span> You are meeting your <strong>${reqSleep}h</strong> sleep requirement.`);
+        reports.push(`<span class="positive">Optimal Rest:</span> Goal of <strong>${reqSleep}h</strong> met.`);
       }
 
-      if (exercise < reqEx) reports.push(`<span class="warning">Low Cardiac Reserve:</span> Age ${age}y requires ${reqEx} days/wk. Missing ${reqEx - exercise} days.`);
+      if (exercise < reqEx) reports.push(`<span class="warning">Low Cardiac Reserve:</span> Age ${age}y requires ${reqEx} days/wk.`);
       
       statusText.innerHTML = reports.length ? reports.join("<br><br>") : "Optimal biological homeostasis.";
 

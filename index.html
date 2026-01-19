@@ -152,11 +152,16 @@
       <input id="exercise" type="range" min="0" max="7" value="3">
     </div>
 
-    <div class="section-title">Risk Factors</div>
+    <div class="section-title">Stressors</div>
     <div class="checklist-group">
       <label class="activity-item"><input type="checkbox" class="stress-check" data-val="11" data-target="heart"> Social Isolation</label>
       <label class="activity-item"><input type="checkbox" class="stress-check" data-val="8" data-target="brain"> High Work Pressure</label>
-      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="5" data-target="brain"> Meditation</label>
+    </div>
+
+    <div class="section-title">Mitigators</div>
+    <div class="checklist-group">
+      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="5" data-target="brain"> Daily Meditation</label>
+      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="6" data-target="both"> Deep Social Connection</label>
     </div>
 
     <div id="status-panel">
@@ -238,6 +243,7 @@
       });
       document.querySelectorAll('.reduce-check:checked').forEach(c => {
         if(c.dataset.target === 'brain') bMitigate += parseFloat(c.dataset.val);
+        else if(c.dataset.target === 'both') { hMitigate += parseFloat(c.dataset.val); bMitigate += parseFloat(c.dataset.val); }
       });
 
       let reqSleep = (age > 65) ? 7.0 : 8.0;
@@ -246,7 +252,7 @@
       const reqEx = (age > 65) ? 5 : (age > 40) ? 4 : 3;
       const sleepDeficit = Math.max(0, reqSleep - sleep);
       const exDeficit = Math.max(0, reqEx - exercise);
-      const ageDelta = (sleepDeficit * 2.5) + (exDeficit * 2) + (hStress + bStress) - bMitigate;
+      const ageDelta = (sleepDeficit * 2.5) + (exDeficit * 2) + (hStress + bStress) - (hMitigate + bMitigate);
       const bioAge = Math.round(age + ageDelta);
       
       document.getElementById("bioAgeDisp").textContent = bioAge;

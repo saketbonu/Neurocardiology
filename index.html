@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Simulation - Stress, Exercise, Sleep, and Age Effects on The Brain and Heart</title>
+  <title>Organ Resilience Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     body {
@@ -19,14 +19,14 @@
       top: 20px;
       left: 20px;
       z-index: 100;
-      background: #e74c3c;
+      background: rgba(231, 76, 60, 0.9);
       color: white;
       border: none;
       padding: 12px 20px;
       border-radius: 30px;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
       text-transform: uppercase;
       font-size: 0.8rem;
     }
@@ -65,6 +65,19 @@
       margin-bottom: 10px;
     }
 
+    #sync-btn {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+
     @media (max-width: 768px) {
       #sidebar {
         width: 100%;
@@ -77,7 +90,7 @@
     .bio-age-box {
       text-align: center;
       padding: 15px;
-      margin: 20px 0;
+      margin: 15px 0;
       background: #e74c3c; 
       color: white;
       border-radius: 12px;
@@ -171,11 +184,14 @@
 
   <div id="sidebar">
     <button id="close-menu">✕ CLOSE</button>
-    <h2>Brains2Heart</h2>
+    <h2>Organ Resilience Lab</h2>
+    
     <div class="bio-age-box">
       <small>ESTIMATED BIOLOGICAL AGE</small>
       <big id="bioAgeDisp">25</big>
     </div>
+
+    <button id="sync-btn">Restore Healthy Baseline</button>
 
     <div class="control">
       <label>Chronological Age <span class="value-display"><span id="ageVal">25</span>y</span></label>
@@ -183,8 +199,8 @@
     </div>
 
     <div class="control">
-      <label>Sleep <span class="value-display"><span id="sleepVal">7.5</span>h</span></label>
-      <input id="sleep" type="range" min="4" max="10" step="0.5" value="7.5">
+      <label>Sleep <span class="value-display"><span id="sleepVal">8</span>h</span></label>
+      <input id="sleep" type="range" min="4" max="10" step="0.5" value="8">
     </div>
 
     <div class="control">
@@ -196,7 +212,7 @@
     <div class="checklist-group">
       <label class="activity-item"><input type="checkbox" class="stress-check" data-val="11" data-target="heart"> Social Isolation</label>
       <label class="activity-item"><input type="checkbox" class="stress-check" data-val="7" data-target="heart"> Processed Diet</label>
-      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="8" data-target="brain"> High Work Pressure</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="15" data-target="brain"> High Work Pressure</label>
     </div>
 
     <div class="section-title">Mitigators</div>
@@ -213,7 +229,7 @@
 
   <div id="viewer-container">
     <div id="heart-view" class="viewport"><div class="label-tag">Heart Rate: <span id="bpmDisplay">60</span> BPM</div></div>
-    <div id="brain-view" class="viewport"><div class="label-tag">Brain Health</div></div>
+    <div id="brain-view" class="viewport"><div class="label-tag">Brain Resilience</div></div>
   </div>
 
   <script type="module">
@@ -224,9 +240,17 @@
     const sidebar = document.getElementById('sidebar');
     const openBtn = document.getElementById('menu-toggle');
     const closeBtn = document.getElementById('close-menu');
+    const syncBtn = document.getElementById('sync-btn');
 
     openBtn.addEventListener('click', () => sidebar.classList.add('open'));
     closeBtn.addEventListener('click', () => sidebar.classList.remove('open'));
+
+    syncBtn.addEventListener('click', () => {
+      const currentAge = parseFloat(document.getElementById('age').value);
+      document.getElementById('sleep').value = (currentAge > 65) ? 7.0 : 8.0;
+      document.getElementById('exercise').value = (currentAge > 65) ? 5 : (currentAge > 40) ? 4 : 3;
+      document.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+    });
 
     let brain, heart;
     const viewers = [];
@@ -256,7 +280,10 @@
         const model = gltf.scene;
         scene.add(model);
         model.traverse(n => {
-           if(n.isMesh && n.material) n.userData.origColor = n.material.color.clone();
+           if(n.isMesh && n.material) {
+             n.userData.origColor = n.material.color.clone();
+             n.material = n.material.clone();
+           }
         });
         if(isHeart) heart = model; else brain = model;
       });
@@ -296,8 +323,8 @@
 
       let reqSleep = (age > 65) ? 7.0 : 8.0;
       if (hStress + bStress > 10) reqSleep += 0.5; 
-      
       const reqEx = (age > 65) ? 5 : (age > 40) ? 4 : 3;
+
       const sleepDeficit = Math.max(0, reqSleep - sleep);
       const exDeficit = Math.max(0, reqEx - exercise);
       const ageDelta = (sleepDeficit * 2.5) + (exDeficit * 2) + (hStress + bStress) - (hMitigate + bMitigate);
@@ -309,7 +336,7 @@
       document.getElementById("exVal").textContent = exercise;
 
       if(heart) {
-        const heartSize = 1.1 + (ageDelta * 0.006);
+        const heartSize = 1.1 + (Math.max(0, ageDelta) * 0.005);
         const bpmValue = 60 + (hStress * 1.5) + (sleepDeficit * 5) - (exercise * 3);
         const freq = bpmValue / 60;
         document.getElementById("bpmDisplay").textContent = Math.round(bpmValue);
@@ -318,27 +345,28 @@
       }
 
       if(brain) {
-        brain.scale.set(1.1, 1.1, 1.1);
-        const healthRatio = Math.max(0, 1 - (ageDelta / 30)); 
+        const healthRatio = Math.max(0, 1 - (ageDelta / 40));
+        const brainShrink = 1.1 * (0.85 + (healthRatio * 0.15));
+        brain.scale.set(brainShrink, brainShrink, brainShrink);
+
         brain.traverse(n => {
           if(n.isMesh && n.material && n.userData.origColor) {
-            const grayValue = 0.5;
-            n.material.color.r = THREE.MathUtils.lerp(grayValue, n.userData.origColor.r, healthRatio);
-            n.material.color.g = THREE.MathUtils.lerp(grayValue, n.userData.origColor.g, healthRatio);
-            n.material.color.b = THREE.MathUtils.lerp(grayValue, n.userData.origColor.b, healthRatio);
+            const desat = 0.6;
+            n.material.color.r = THREE.MathUtils.lerp(desat, n.userData.origColor.r, healthRatio);
+            n.material.color.g = THREE.MathUtils.lerp(desat, n.userData.origColor.g, healthRatio);
+            n.material.color.b = THREE.MathUtils.lerp(desat, n.userData.origColor.b, healthRatio);
           }
         });
       }
 
       const statusText = document.getElementById("status-text");
       let reports = [];
-      if (sleep < reqSleep) {
-        reports.push(`<span class="warning">Sleep Debt:</span> Your profile requires <strong>${reqSleep}h</strong> of sleep. You are missing ${sleepDeficit}h, which is halting glymphatic brain clearance.`);
+      if (ageDelta > 15) {
+        reports.push(`<span class="warning">Structural Decay:</span> Prolonged stress has induced measurable cortical thinning. The physical volume of memory-related regions has decreased, signifying premature biological aging.`);
+      } else if (sleep < reqSleep) {
+        reports.push(`<span class="warning">Glymphatic Stasis:</span> Sleep deprivation is inhibiting the brain's ability to purge metabolic waste, impacting neural connectivity.`);
       } else {
-        reports.push(`<span class="positive">Optimal Rest:</span> You are meeting your <strong>${reqSleep}h</strong> sleep requirement.`);
-      }
-      if (exercise < reqEx) {
-        reports.push(`<span class="warning">Low Cardiac Reserve:</span> At age ${age}y, the heart requires ${reqEx} days/wk.`);
+        reports.push(`<span class="positive">Optimal Homeostasis:</span> Neural circuits show high connectivity and robust structural integrity.`);
       }
       statusText.innerHTML = reports.join("<br><br>");
 
@@ -351,4 +379,3 @@
   </script>
 </body>
 </html>
-

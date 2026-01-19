@@ -214,13 +214,17 @@
 
     <div id="status-panel">
       <strong>Medical Observation:</strong><br>
-      <div id="status-text">Initial evaluation...</div>
+      <div id="status-text">Synchronizing clinical data...</div>
     </div>
   </div>
 
   <div id="viewer-container">
-    <div id="heart-view" class="viewport"><div class="label-tag">BPM: <span id="bpmDisplay">60</span></div></div>
-    <div id="brain-view" class="viewport"><div class="label-tag">Cerebral Integrity</div></div>
+    <div id="heart-view" class="viewport">
+        <div class="label-tag">Coronary Health<span id="bpmDisplay">60</span> BPM</div>
+    </div>
+    <div id="brain-view" class="viewport">
+        <div class="label-tag">Cerebral Health</div>
+    </div>
   </div>
 
   <script type="module">
@@ -353,16 +357,16 @@
       const statusText = document.getElementById("status-text");
       let msg = "";
 
-      if (sleepDeficit > 2) {
-        msg = `<span class="warning">Glymphatic Failure:</span> Chronic sleep debt is preventing metabolic waste clearance, increasing the risk of early-onset neurodegeneration.`;
+      if (currentBPM > 90) {
+        msg = `<span class="warning">Myocardial Strain:</span> Elevated heart rate suggests cardiac hypertrophy risk. Chronic sympathetic activation is reducing your heart rate variability (HRV).`;
+      } else if (sleepDeficit > 2) {
+        msg = `<span class="warning">Glymphatic Stasis:</span> Sleep debt is preventing cerebral waste clearance. This physical "sludge" accelerates cortical thinning seen in the model.`;
       } else if (ageDelta > 15) {
-        msg = `<span class="warning">PFC Atrophy:</span> Sustained cortisol levels are causing physical thinning of the prefrontal cortex, impairing emotional regulation.`;
-      } else if (currentBPM > 90) {
-        msg = `<span class="warning">Sympathetic Overload:</span> Your heart is in a chronic "fight or flight" state. This elevates arterial pressure and risks left ventricular hypertrophy.`;
-      } else if (exercise >= reqEx && sleep >= reqSleep && (hStress + bStress) < 10) {
-        msg = `<span class="positive">Optimal Plasticity:</span> Low RHR and robust brain volume suggest high neural plasticity and cardiovascular reserve.`;
+        msg = `<span class="warning">Neural Atrophy:</span> Sustained cortisol levels have led to hippocampal volume loss, impairing memory consolidation and executive function.`;
+      } else if (currentBPM < 65 && healthRatio > 0.9) {
+        msg = `<span class="positive">Vagal Dominance:</span> Low resting BPM and full brain volume indicate high autonomic resilience and optimal neural plasticity.`;
       } else {
-        msg = `<span class="positive">Standard Homeostasis:</span> Organs are performing within expected demographic baselines.`;
+        msg = `<span class="positive">Standard Homeostasis:</span> Organs are operating within healthy physiological parameters for your demographic.`;
       }
       statusText.innerHTML = msg;
 

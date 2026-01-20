@@ -9,9 +9,11 @@
       margin: 0;
       height: 100vh;
       font-family: 'Segoe UI', system-ui, sans-serif;
-      background: transparent; 
+      background: #fdfdfd; 
       color: #333;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     #menu-toggle {
@@ -33,9 +35,10 @@
 
     #sidebar {
       position: fixed;
-      left: -420px;
+      left: -100%;
       top: 0;
-      width: 400px;
+      width: 100%;
+      max-width: 420px;
       height: 100%;
       background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(15px);
@@ -52,19 +55,6 @@
     #sidebar.open { left: 0; }
     #close-menu { align-self: flex-end; background: none; border: none; color: #c0392b; font-weight: 900; cursor: pointer; font-size: 1.4rem; }
 
-    #sync-btn {
-      background: #27ae60;
-      color: white;
-      border: none;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-bottom: 20px;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-    }
-
     .bio-age-box {
       text-align: center;
       padding: 20px;
@@ -75,28 +65,56 @@
     }
     .bio-age-box big { font-size: 2.5rem; font-weight: 800; display: block; }
 
+    #sync-btn {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+
     .control { margin-bottom: 22px; }
     .control label { display: block; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; color: #777; margin-bottom: 5px; }
     .value-display { font-size: 1rem; color: #c0392b; float: right; font-weight: 900; }
-    input[type=range] { width: 100%; accent-color: #c0392b; cursor: pointer; }
+    input[type=range] { width: 100%; accent-color: #c0392b; cursor: pointer; height: 12px; }
 
     .section-title { font-size: 0.8rem; font-weight: 900; text-transform: uppercase; color: #444; margin: 25px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 5px; }
 
     .checklist-group { display: grid; gap: 10px; margin-bottom: 15px; }
-    .activity-item { display: flex; align-items: center; font-size: 0.9rem; background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #ddd; cursor: pointer; }
-    .activity-item input { margin-right: 15px; transform: scale(1.2); accent-color: #c0392b; }
+    .activity-item { 
+      display: flex; 
+      align-items: center; 
+      font-size: 0.9rem; 
+      background: #fff; 
+      padding: 14px; 
+      border-radius: 10px; 
+      border: 1px solid #ddd; 
+      cursor: pointer;
+      min-height: 48px;
+    }
+    .activity-item input { margin-right: 15px; transform: scale(1.4); accent-color: #c0392b; }
 
-    #status-panel { padding: 20px; background: rgba(255, 255, 255, 0.5); border-radius: 15px; border-left: 6px solid #c0392b; margin-bottom: 30px; }
-    .diag-item { margin-bottom: 15px; line-height: 1.5; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; }
+    #status-panel { padding: 20px; background: rgba(245, 245, 245, 0.8); border-radius: 15px; border-left: 6px solid #c0392b; margin-bottom: 30px; }
+    .diag-item { margin-bottom: 18px; line-height: 1.5; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; }
     .diag-label { font-weight: 900; text-transform: uppercase; font-size: 0.7rem; color: #999; display: block; margin-bottom: 4px; }
 
-    #viewer-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; z-index: 1; }
-    .viewport { flex: 1; position: relative; }
+    #viewer-container { flex: 1; display: flex; flex-direction: column; z-index: 1; }
 
-    .label-tag { position: absolute; top: 90px; left: 30px; background: rgba(192, 57, 43, 0.9); color: white; padding: 8px 16px; border-radius: 50px; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; }
+    @media (min-width: 768px) {
+      #viewer-container { flex-direction: row; }
+      #sidebar { left: -420px; width: 400px; }
+    }
 
-    .warning { color: #e74c3c; font-weight: bold; }
-    .positive { color: #27ae60; font-weight: bold; }
+    .viewport { flex: 1; position: relative; min-height: 300px; }
+    .label-tag { position: absolute; top: 80px; left: 20px; background: rgba(192, 57, 43, 0.9); color: white; padding: 8px 16px; border-radius: 50px; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; }
+
+    .warning { color: #e74c3c; font-weight: 800; display: block; margin-bottom: 2px; }
+    .positive { color: #27ae60; font-weight: 800; display: block; margin-bottom: 2px; }
   </style>
 
   <script type="importmap">
@@ -140,13 +158,15 @@
 
     <div class="section-title">Stressors</div>
     <div class="checklist-group">
-      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="12" data-target="heart"> Social Isolation</label>
-      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="15" data-target="brain"> Constant Work Stress</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="14" data-target="heart"> Social Isolation</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="9" data-target="heart"> Processed Diet</label>
+      <label class="activity-item"><input type="checkbox" class="stress-check" data-val="18" data-target="brain"> Constant Work Stress</label>
     </div>
 
     <div class="section-title">Mitigators</div>
     <div class="checklist-group">
-      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="6" data-target="both"> Strong Social Network</label>
+      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="6" data-target="brain"> Daily Meditation</label>
+      <label class="activity-item"><input type="checkbox" class="reduce-check" data-val="7" data-target="both"> Strong Social Network</label>
     </div>
 
     <div id="status-panel">
@@ -192,7 +212,7 @@
       const container = document.getElementById(id);
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(35, container.clientWidth/container.clientHeight, 0.1, 1000);
-      camera.position.z = 3.5; 
+      camera.position.z = 3.8; 
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); 
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(container.clientWidth, container.clientHeight);
@@ -241,15 +261,16 @@
         else bStress += parseFloat(c.dataset.val);
       });
       document.querySelectorAll('.reduce-check:checked').forEach(c => {
-        if(c.dataset.target === 'both') { hMitigate += parseFloat(c.dataset.val); bMitigate += parseFloat(c.dataset.val); }
+        if(c.dataset.target === 'brain') bMitigate += parseFloat(c.dataset.val);
+        else if(c.dataset.target === 'both') { hMitigate += parseFloat(c.dataset.val); bMitigate += parseFloat(c.dataset.val); }
       });
 
       const sleepTarget = (age >= 65) ? 7.5 : 8.0;
       const sleepDeficit = Math.max(0, sleepTarget - sleep);
       const exerciseTarget = 3;
       
-      const ageDelta = (sleepDeficit * 3.0) + (Math.max(0, exerciseTarget - exercise) * 2.8) + (hStress + bStress) - (hMitigate + bMitigate);
-      const bioAge = Math.max(Math.round(age * 0.82), Math.round(age + ageDelta));
+      const ageDelta = (sleepDeficit * 3.5) + (Math.max(0, exerciseTarget - exercise) * 3.8) + (hStress + bStress) - (hMitigate + bMitigate);
+      const bioAge = Math.max(18, Math.max(Math.round(age * 0.7), Math.round(age + ageDelta)));
       
       document.getElementById("bioAgeDisp").textContent = bioAge;
       document.getElementById("ageVal").textContent = age;
@@ -257,7 +278,7 @@
       document.getElementById("exVal").textContent = exercise;
 
       if(heart) {
-        const bpmFinal = Math.max(50, 62 + (age * 0.08) - (exercise * 2.2) + (sleepDeficit * 4) + hStress - hMitigate);
+        const bpmFinal = Math.max(50, 62 + (age * 0.15) - (exercise * 2.5) + (sleepDeficit * 4.5) + hStress - hMitigate);
         document.getElementById("bpmDisplay").textContent = Math.round(bpmFinal);
         const pulse = 1 + (Math.pow(Math.sin(time * (bpmFinal/60) * Math.PI), 4) * 0.08);
         heart.scale.set(1.15 * pulse, 1.15 * pulse, 1.15 * pulse);
@@ -302,4 +323,3 @@
   </script>
 </body>
 </html>
-

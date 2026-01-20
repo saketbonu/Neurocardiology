@@ -123,12 +123,14 @@
       background: rgba(255, 255, 255, 0.5);
       border-radius: 12px;
       border-left: 5px solid #e74c3c; 
-      font-size: 0.85rem;
-      line-height: 1.5;
-      min-height: 150px;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      min-height: 200px;
       color: #333;
       margin-bottom: 30px;
     }
+
+    .diag-item { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05); }
 
     #viewer-container { 
       position: absolute;
@@ -213,17 +215,17 @@
     </div>
 
     <div id="status-panel">
-      <strong>Medical Observation:</strong><br>
-      <div id="status-text">Synchronizing clinical data...</div>
+      <strong>Clinical Diagnoses:</strong><br><br>
+      <div id="status-text">Analyzing systems...</div>
     </div>
   </div>
 
   <div id="viewer-container">
     <div id="heart-view" class="viewport">
-        <div class="label-tag">Coronary Health: <span id="bpmDisplay">60</span> BPM</div>
+        <div class="label-tag">Heart Health: <span id="bpmDisplay">60</span> BPM</div>
     </div>
     <div id="brain-view" class="viewport">
-        <div class="label-tag">Cerebral Health</div>
+        <div class="label-tag">Cerebral Integrity</div>
     </div>
   </div>
 
@@ -243,7 +245,7 @@
     syncBtn.addEventListener('click', () => {
       const currentAge = parseFloat(document.getElementById('age').value);
       document.getElementById('sleep').value = (currentAge > 65) ? 7.0 : 8.0;
-      document.getElementById('exercise').value = (currentAge > 65) ? 5 : (currentAge > 40) ? 4 : 3;
+      document.getElementById('exercise').value = 4;
       document.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
     });
 
@@ -315,10 +317,10 @@
 
       const reqSleep = (age > 65) ? 7.0 : 8.0;
       const sleepDeficit = Math.max(0, reqSleep - sleep);
-      const reqEx = (age > 65) ? 5 : (age > 40) ? 4 : 3;
+      const reqEx = 3; 
       const exDeficit = Math.max(0, reqEx - exercise);
 
-      const ageDelta = (sleepDeficit * 2.8) + (exDeficit * 2.2) + (hStress + bStress) - (hMitigate + bMitigate);
+      const ageDelta = (sleepDeficit * 3.2) + (exDeficit * 3.5) + (hStress + bStress) - (hMitigate + bMitigate);
       const bioAge = Math.round(age + ageDelta);
       
       document.getElementById("bioAgeDisp").textContent = bioAge;
@@ -329,7 +331,7 @@
       let currentBPM = 60;
       if(heart) {
         const baseRHR = 60 + (age * 0.15); 
-        const exBonus = exercise * 3.0; 
+        const exBonus = exercise * 2.8; 
         const sleepPenalty = sleepDeficit * 4.5;
         currentBPM = Math.max(48, baseRHR - exBonus + sleepPenalty + hStress + bStress - hMitigate);
         
@@ -339,14 +341,14 @@
         heart.scale.set(1.1 * pulse, 1.1 * pulse, 1.1 * pulse);
       }
 
-      const healthRatio = Math.max(0, 1 - (ageDelta / 42));
+      const healthRatio = Math.max(0, 1 - (ageDelta / 45));
       if(brain) {
-        const brainShrink = 1.1 * (0.82 + (healthRatio * 0.18));
+        const brainShrink = 1.1 * (0.80 + (healthRatio * 0.20));
         brain.scale.set(brainShrink, brainShrink, brainShrink);
 
         brain.traverse(n => {
           if(n.isMesh && n.material && n.userData.origColor) {
-            const desat = 0.55;
+            const desat = 0.50;
             n.material.color.r = THREE.MathUtils.lerp(desat, n.userData.origColor.r, healthRatio);
             n.material.color.g = THREE.MathUtils.lerp(desat, n.userData.origColor.g, healthRatio);
             n.material.color.b = THREE.MathUtils.lerp(desat, n.userData.origColor.b, healthRatio);
@@ -355,20 +357,37 @@
       }
 
       const statusText = document.getElementById("status-text");
-      let msg = "";
+      let reports = [];
 
-      if (currentBPM > 90) {
-        msg = `<span class="warning">Myocardial Strain:</span> Elevated heart rate suggests cardiac hypertrophy risk. Chronic sympathetic activation is reducing your heart rate variability (HRV).`;
-      } else if (sleepDeficit > 2) {
-        msg = `<span class="warning">Glymphatic Stasis:</span> Sleep debt is preventing cerebral waste clearance. This physical "sludge" accelerates cortical thinning seen in the model.`;
-      } else if (ageDelta > 15) {
-        msg = `<span class="warning">Neural Atrophy:</span> Sustained cortisol levels have led to hippocampal volume loss, impairing memory consolidation and executive function.`;
-      } else if (currentBPM < 65 && healthRatio > 0.9) {
-        msg = `<span class="positive">Vagal Dominance:</span> Low resting BPM and full brain volume indicate high autonomic resilience and optimal neural plasticity.`;
-      } else {
-        msg = `<span class="positive">Standard Homeostasis:</span> Organs are operating within healthy physiological parameters for your demographic.`;
+      if (currentBPM > 100) {
+        reports.push(`<div class="diag-item"><span class="warning">Clinical Tachycardia:</span> Resting BPM over 100 triggers chronic myocardial strain and arterial fatigue.</div>`);
+      } else if (currentBPM > 80) {
+        reports.push(`<div class="diag-item"><span class="warning">Sympathetic Dominance:</span> Heart rate indicates a mild "fight-or-flight" state.</div>`);
+      } else if (currentBPM < 65) {
+        reports.push(`<div class="diag-item"><span class="positive">Vagal Resilience:</span> Efficient heart rate suggesting high cardiovascular reserve.</div>`);
       }
-      statusText.innerHTML = msg;
+
+      if (sleepDeficit > 1.5) {
+        reports.push(`<div class="diag-item"><span class="warning">Glymphatic Failure:</span> Brain waste clearance is severely compromised due to sleep debt.</div>`);
+      } else if (sleep >= reqSleep) {
+        reports.push(`<div class="diag-item"><span class="positive">Metabolic Cleanup:</span> Sleep duration is sufficient for nightly neural restoration.</div>`);
+      }
+
+      if (ageDelta > 15) {
+        reports.push(`<div class="diag-item"><span class="warning">Cortical Atrophy:</span> Sustained stress has led to measurable thinning of the cortical mantle.</div>`);
+      }
+
+      if (exercise < 2) {
+        reports.push(`<div class="diag-item"><span class="warning">Sedentary Deconditioning:</span> Lack of movement is reducing heart stroke volume and neural BDNF levels.</div>`);
+      } else if (exercise >= 4) {
+        reports.push(`<div class="diag-item"><span class="positive">Cardio-Protection:</span> Regular exercise is actively mitigating systemic inflammation.</div>`);
+      }
+
+      if (reports.length === 0) {
+        reports.push(`<div class="diag-item"><span class="positive">Standard Baseline:</span> All systems are currently stable.</div>`);
+      }
+
+      statusText.innerHTML = reports.join("");
 
       viewers.forEach(v => {
         v.controls.update();
@@ -379,4 +398,3 @@
   </script>
 </body>
 </html>
-
